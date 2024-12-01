@@ -20,8 +20,7 @@
     Studenckie koło naukowego Microsystem Oriented Society (SKN MOS) prowadzi inwentaryzacje oraz możliwość wypożyczania sprzętu oraz narzędzi dla członków grupy w ramach działania koła naukowego. Siedziba koła zlokalizowana jest w podpiwniczeniu akademika T4 "Czworak", gdzie magazynowany jest sprzęt. Działanie opiera się na rejestrowaniu oraz monitorowaniu sprzętu oraz narzędzi przez administratorów koła naukowego. W tym przypadku są to członkowie zarządu. Katalogują oraz przechowując wszystkie informacje, które są im niezbędne do poprawnego działania koła oraz działania w ramach instytucji Politechniki Wrocławskiej. Taki system w bieżącym momencie pozwala w łatwy sposób zarządzać dostępnymi zasobami.
 
     \subsection{Opis zasobów ludzkich oraz procesów}
-    Proces inwentaryzacji, na moment definiowania nowego systemu, opiera się na fizycznym odnotowywaniu nowego sprzętu z wykorzystanie numerów id lub jego nazwy. Archiwizacja urządzeń odbywa się w formie papierowej, na papierowym arkuszu. Spis sprzętów wypożyczonych prowadzony jest w oddzielnych zasobach w postaci listy  wypożyczeń. Lista ta jest przechowywana również na arkuszu papieru. Proces inwentaryzacji musi być jawny dla klienta jak i dla administratora tj. Klient musi wiedzieć co wypożyczyl i do kiedy musi oddać, administrator musi mieć jawną listę kto co ma, i kiedy ma oddać. Nie może nastąpić sytuacja, kiedy administrator nie wie gdzie jest dany przemiot, jak i nie może wystapić sytuacja, kiedy klient nie wie co ma wypożyczone i do kiedy ma to oddać.
-    
+    Proces inwentaryzacji, na moment definiowania nowego systemu, opiera się na fizycznym odnotowywaniu nowego sprzętu z wykorzystanie numerów id lub jego nazwy. Archiwizacja urządzeń odbywa się w formie papierowej, na papierowym arkuszu. Spis sprzętów wypożyczonych prowadzony jest w oddzielnych zasobach w postaci listy  wypożyczeń. Lista ta jest przechowywana również na arkuszu papieru. Proces inwentaryzacji musi być jawny dla klienta jak i dla administratora tj. Klient zobowiązany jest do wiedzy na temat przedmiotu wypożyczenia oraz terminu jego zwrotu. Administrator natomiast powinien dysponować przejrzystą listą, zawierającą informacje o tym, kto, co wypożyczył oraz do kiedy ma obowiązek zwrócić dany przedmiot. Nie może zaistnieć sytuacja, w której administrator nie posiada wiedzy o lokalizacji wypożyczonego przedmiotu, ani sytuacja, w której klient nie jest świadomy, co zostało wypożyczone i w jakim terminie ma obowiązek zwrotu.    
     Inwentaryzacja w bieżącym momencie jest prosta, intuicyjna oraz łatwa do przyswojenia dla nowych członków koła, którzy systematycznie dołączają. Proces jest jednak mało wydajny przy zwiększającej się liczbie sprzętu oraz członków koła naukowego. Wzrost ilości dokumentacji dot. sprzętu oraz jego wypożyczeń skutkuje brakiem przejrzystości, trudnościami w archiwizacji oraz lokalizacją sprzętu. Podsumowując proces jest czasochłonny oraz podatny na błędy systemowe.
 
     W bieżącym momencie osoby działające w obrębie sytemu można podzielić na dwie grupy użytkowników. Pierwsza grupa to użytkownicy z uprawnieniami do odczytu. Klasyfikują się do niej członkowie koła, którzy mogą w swobodny sposób korzystać oraz wypożyczać sprzęt z placówki koła naukowego. W tym momencie do przedstawianego zbioru należy około \textbf{30} członków koła. Druga grupa użytkowników to administratorzy dbający o archiwizację oraz posiadający uprawnienia do wypożyczania sprzętu. Osoby
@@ -29,7 +28,6 @@
     Liczba administratorow : \textbf{5 - 10} \newline
     Liczba klientow : \textbf{30}
     
-    Obciążenie serwera jest maksymalnie 10 zapytań na minute, w najgorszym przypadku, w najlepszym jest to 1 zapytanie na godzine.
 \section{\textbf{ETAP II}}
     \subsection{Wymagania funkcjonalne i niefunkcjonalne}
     Klient (administratorzy) przedstawili następne funkcjonalności dla systemu usprawniającego proces inwentaryzacji oraz wypożyczeń.
@@ -208,7 +206,7 @@ Zakładając 5 wypożyczeń tygodniowo i średnio 2 przedmioty na wypożyczenie,
 \subsubsection{\textbf{Częstość odwołań do tabel i kolumn}}
 Poniżej przedstawiono przewidywaną częstość odwołań do tabel i kolumn na podstawie liczby operacji w systemie.
 
-\begin{table}[h!]
+\begin{table}[h]
     \centering
         \begin{tabular}[width=\textwidth]{|l|l|p{5cm}|l|}
             \hline
@@ -291,7 +289,7 @@ Zoptymalizowane zapytania oraz odpowiednio zaplanowane indeksy zapewnią płynno
 
 Aby zapewnić integralność danych na podstawie dostarczonego diagramu ERD, analizujemy kluczowe zależności i relacje między tabelami. W poniższej tabeli przedstawiono rekomendowane akcje ``cascade delete'' lub wyzwalacze, które należy zastosować:
 
-\begin{table}[h!]
+\begin{table}[h]
     \centering
     \begin{tabular}{|p{4cm}|p{4cm}|p{6cm}|}
         \hline
@@ -307,7 +305,7 @@ Aby zapewnić integralność danych na podstawie dostarczonego diagramu ERD, ana
         \hline
         Equipment & Reservation Equipment & ON DELETE CASCADE \\
         \hline
-        Technical Status, Status & Equipment & Wyzwalacz przed usunięciem \\
+        Technical Status, Status & Equipment & ON DELETE CASCADE  \\
         \hline
     \end{tabular}
 \end{table}
