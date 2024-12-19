@@ -377,6 +377,477 @@ Poniższa analiza dotyczy przypisania odpowiednich ról oraz poziomów dostępu 
     \item \textbf{Kontrola dostępu oparta na roli (RBAC)}: Implementacja RBAC w celu ograniczenia dostępu do niezbędnych poziomów uprawnień.
 \end{itemize}
 
+\section{Etap IV}
 
+\subsection{Implementacja bazy danych}
+\begin{itemize}
+    \item \texttt{create.sql} - tworzenie bazy danych
+    \item \texttt{roles.sql} - tworzenie ról i użytkowników
+    \item \texttt{index.sql} - tworzenie indeksów
+    \item \texttt{delete.sql} - usuwanie bazy danych
+    \item \texttt{test\_data.sql} - dodanie danych testowych
+    \item \texttt{crud.sql} - zbiór zapytań CREATE, READ, UPDATE, DELETE
+\end{itemize}
+
+\subsection{Testowanie bazy danych}
+W sprawozdaniu zostały przedstawione wybrane przypadki testowania.
+
+\subsubsection{Uprawnienia ról}
+
+\paragraph{Administrator}
+\begin{verbatim}
+MariaDB [(none)]> use baza; show tables;
+    Reading table information for completion of table and column names
+    You can turn off this feature to get a quicker startup with -A
+    
+    Database changed
+    +------------------------+
+    | Tables_in_baza         |
+    +------------------------+
+    | Category               |
+    | ContactUserInformation |
+    | Equipment              |
+    | Location               |
+    | RentalEquipment        |
+    | RentalRegister         |
+    | ReservationEquipment   |
+    | ReservationRegister    |
+    | Role                   |
+    | Status                 |
+    | TechnicalStatus        |
+    | User                   |
+    +------------------------+
+    12 rows in set (0.000 sec)
+\end{verbatim}
+
+Tak jak zakładano, użytkownik z uprawnieniami administratora ma uprawnienia do całej bazy.
+
+\begin{verbatim}
+MariaDB [baza]> select * from User;
+    +--------------------------------------+------------+-----------+---------+------------+
+    | id                                   | first_name | last_name | Role_ID | hire_date  |
+    +--------------------------------------+------------+-----------+---------+------------+
+    | 4eb69915-b8a7-11ef-b533-34415dee36f3 | Alice      | Smith     |       1 | 2020-01-15 |
+    | 4eb69ca5-b8a7-11ef-b533-34415dee36f3 | Bob        | Johnson   |       2 | 2021-06-01 |
+    | 4eb69dc5-b8a7-11ef-b533-34415dee36f3 | Charlie    | Brown     |       3 | 2022-09-12 |
+    +--------------------------------------+------------+-----------+---------+------------+
+    3 rows in set (0.001 sec)
+\end{verbatim}
+
+Tak jak zakładano, użytkownik ma dostęp do tabeli \texttt{User}.
+
+\paragraph{Zarząd}
+\begin{verbatim}
+MariaDB [(none)]> use baza; show tables;
+    Reading table information for completion of table and column names
+    You can turn off this feature to get a quicker startup with -A
+    
+    Database changed
+    +----------------------+
+    | Tables_in_baza       |
+    +----------------------+
+    | Category             |
+    | Equipment            |
+    | Location             |
+    | RentalEquipment      |
+    | RentalRegister       |
+    | ReservationEquipment |
+    | ReservationRegister  |
+    | Status               |
+    | TechnicalStatus      |
+    | User                 |
+    +----------------------+
+    10 rows in set (0.000 sec)
+\end{verbatim}
+
+Użytkownik z uprawnieniami \texttt{zarząd} ma dostęp tylko do wybranych tabel.
+
+\begin{verbatim}
+MariaDB [baza]> select * from User;
+    +--------------------------------------+------------+-----------+---------+------------+
+    | id                                   | first_name | last_name | Role_ID | hire_date  |
+    +--------------------------------------+------------+-----------+---------+------------+
+    | 4eb69915-b8a7-11ef-b533-34415dee36f3 | Alice      | Smith     |       1 | 2020-01-15 |
+    | 4eb69ca5-b8a7-11ef-b533-34415dee36f3 | Bob        | Johnson   |       2 | 2021-06-01 |
+    | 4eb69dc5-b8a7-11ef-b533-34415dee36f3 | Charlie    | Brown     |       3 | 2022-09-12 |
+    +--------------------------------------+------------+-----------+---------+------------+
+    3 rows in set (0.001 sec)
+
+MariaDB [baza]> INSERT INTO User (id, first_name, last_name, Role_id, hire_date) VALUES
+    -> (UUID(), 'Jan', 'Kowalski', 1, '2024-12-12');
+ERROR 1142 (42000): INSERT command denied to user 'zarzad'@'localhost' for table `baza`.`User`
+\end{verbatim}
+
+Użytkownik \texttt{zarząd} nie ma uprawnień do dodawania danych do tabeli \texttt{User}, ani dostępu do tabeli \texttt{ContactUserInformation}.
+
+\paragraph{MOSowicz}
+\begin{verbatim}
+MariaDB [(none)]> use baza; show tables;
+    Reading table information for completion of table and column names
+    You can turn off this feature to get a quicker startup with -A
+    
+    Database changed
+    +----------------------+
+    | Tables_in_baza       |
+    +----------------------+
+    | Equipment            |
+    | Location             |
+    | RentalEquipment      |
+    | RentalRegister       |
+    | ReservationEquipment |
+    | ReservationRegister  |
+    | Status               |
+    | TechnicalStatus      |
+    +----------------------+
+    8 rows in set (0.001 sec)
+\end{verbatim}
+
+Użytkownik z rangą \texttt{MOSowicz} ma ograniczony dostęp do tabel.
+
+\begin{verbatim}
+MariaDB [baza]> select * from RentalRegister;
+    +--------------------------------------+--------------------------------------+--------------------------------------+------------+------------+
+    | id                                   | user_id                              | equipment_id                         | start_date | end_date   |
+    +--------------------------------------+--------------------------------------+--------------------------------------+------------+------------+
+    | 4eb98ddf-b8a7-11ef-b533-34415dee36f3 | 4eb69915-b8a7-11ef-b533-34415dee36f3 | 4eb8f84c-b8a7-11ef-b533-34415dee36f3 | 2023-01-01 | 2023-01-10 |
+    | 4eb992c5-b8a7-11ef-b533-34415dee36f3 | 4eb69ca5-b8a7-11ef-b533-34415dee36f3 | 4eb8fc9c-b8a7-11ef-b533-34415dee36f3 | 2023-02-01 | 2023-02-05 |
+    +--------------------------------------+--------------------------------------+--------------------------------------+------------+------------+
+    2 rows in set (0.001 sec)
+\end{verbatim}
+
+\paragraph{Rekrut}
+\begin{verbatim}
+MariaDB [(none)]> use baza; show tables;
+    Reading table information for completion of table and column names
+    You can turn off this feature to get a quicker startup with -A
+    
+    Database changed
+    +----------------------+
+    | Tables_in_baza       |
+    +----------------------+
+    | Equipment            |
+    | Location             |
+    | ReservationEquipment |
+    | ReservationRegister  |
+    | Status               |
+    +----------------------+
+    5 rows in set (0.000 sec)
+\end{verbatim}
+
+Użytkownik z uprawnieniami \texttt{Rekrut} ma bardzo ograniczone uprawnienia.
+
+\subsubsection{CRUD}
+
+\subsubsection*{Create}
+
+\subsubsection*{Dodanie danych do tabeli \texttt{User}:}
+
+\begin{verbatim}
+MariaDB [baza]> SELECT * FROM User;
++--------------------------------------+------------+-----------+---------+------------+
+| id                                   | first_name | last_name | Role_ID | hire_date  |
++--------------------------------------+------------+-----------+---------+------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | Alice      | Smith     |       1 | 2020-01-15 |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | Bob        | Johnson   |       2 | 2021-06-01 |
+| 24e216a1-b8b1-11ef-b533-34415dee36f3 | Charlie    | Brown     |       3 | 2022-09-12 |
++--------------------------------------+------------+-----------+---------+------------+
+3 rows in set (0.001 sec)
+
+MariaDB [baza]> INSERT INTO User (id, first_name, last_name, Role_id, hire_date) VALUES
+    -> (UUID(), 'Jan', 'Kowalski', 1, '2024-12-12');
+Query OK, 1 row affected (0.006 sec)
+
+MariaDB [baza]> SELECT * FROM User;
++--------------------------------------+------------+-----------+---------+------------+
+| id                                   | first_name | last_name | Role_ID | hire_date  |
++--------------------------------------+------------+-----------+---------+------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | Alice      | Smith     |       1 | 2020-01-15 |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | Bob        | Johnson   |       2 | 2021-06-01 |
+| 24e216a1-b8b1-11ef-b533-34415dee36f3 | Charlie    | Brown     |       3 | 2022-09-12 |
+| a4cb5b62-b8b1-11ef-b533-34415dee36f3 | Jan        | Kowalski  |       1 | 2024-12-12 |
++--------------------------------------+------------+-----------+---------+------------+
+4 rows in set (0.001 sec)
+\end{verbatim}
+
+\subsubsection*{Dodanie danych do tabeli \texttt{Equipment}:}
+
+\begin{verbatim}
+MariaDB [baza]> SELECT name, quantity FROM Equipment;
++-----------+----------+
+| name      | quantity |
++-----------+----------+
+| Laptop    |       10 |
+| Raspberry |        5 |
+| Drill     |        5 |
++-----------+----------+
+3 rows in set (0.001 sec)
+
+MariaDB [baza]> INSERT INTO Equipment (id, name, quantity, description, technical_status_id, status_id, category_id, location_id) VALUES
+    -> (UUID(), 'Laptop Lenovo', 3, 'laptop', 1, 1, 1, 1);
+Query OK, 1 row affected (0.005 sec)
+
+MariaDB [baza]> SELECT name, quantity FROM Equipment;
++---------------+----------+
+| name          | quantity |
++---------------+----------+
+| Laptop        |       10 |
+| Raspberry     |        5 |
+| Drill         |        5 |
+| Laptop Lenovo |        3 |
++---------------+----------+
+4 rows in set (0.001 sec)
+\end{verbatim}
+
+\subsection*{Read}
+
+\subsubsection*{Pobranie użytkowników:}
+
+\begin{verbatim}
+MariaDB [baza]> SELECT * FROM User;
++--------------------------------------+------------+-----------+---------+------------+
+| id                                   | first_name | last_name | Role_ID | hire_date  |
++--------------------------------------+------------+-----------+---------+------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | Alice      | Smith     |       1 | 2020-01-15 |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | Bob        | Johnson   |       2 | 2021-06-01 |
+| 24e216a1-b8b1-11ef-b533-34415dee36f3 | Charlie    | Brown     |       3 | 2022-09-12 |
+| a4cb5b62-b8b1-11ef-b533-34415dee36f3 | Jan        | Kowalski  |       1 | 2024-12-12 |
++--------------------------------------+------------+-----------+---------+------------+
+4 rows in set (0.001 sec)
+\end{verbatim}
+
+\subsubsection*{Pobranie dostępnego sprzętu w lokalizacji nr 1:}
+
+\begin{verbatim}
+MariaDB [baza]> SELECT eq.name, s.name, location_id FROM Equipment eq
+    -> JOIN Status s ON eq.status_id = s.id
+    -> WHERE location_id = 1;
++---------------+-----------+-------------+
+| name          | name      | location_id |
++---------------+-----------+-------------+
+| Laptop        | Available |           1 |
+| Laptop Lenovo | Available |           1 |
++---------------+-----------+-------------+
+2 rows in set (0.002 sec)
+\end{verbatim}
+
+\subsection*{Update}
+
+\subsubsection*{Zmiana statusu sprzętu w tabeli \texttt{Equipment}:}
+
+\begin{verbatim}
+MariaDB [baza]> SELECT id, name, status_id FROM Equipment WHERE name = 'Laptop';
++--------------------------------------+--------+-----------+
+| id                                   | name   | status_id |
++--------------------------------------+--------+-----------+
+| 24e48051-b8b1-11ef-b533-34415dee36f3 | Laptop |         1 |
++--------------------------------------+--------+-----------+
+1 row in set (0.001 sec)
+
+MariaDB [baza]> UPDATE Equipment
+    -> SET status_id = 3
+    -> WHERE name = 'Laptop';
+Query OK, 1 row affected (0.007 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [baza]> SELECT id, name, status_id FROM Equipment WHERE name = 'Laptop';
++--------------------------------------+--------+-----------+
+| id                                   | name   | status_id |
++--------------------------------------+--------+-----------+
+| 24e48051-b8b1-11ef-b533-34415dee36f3 | Laptop |         3 |
++--------------------------------------+--------+-----------+
+1 row in set (0.001 sec)
+\end{verbatim}
+
+\subsubsection*{Dodanie i modyfikacja numeru telefonu użytkownika \texttt{Jan}:}
+
+\begin{verbatim}
+MariaDB [baza]> SELECT * FROM ContactUserInformation;
++--------------------------------------+--------------+---------------------+
+| user_id                              | Phone_Number | Email               |
++--------------------------------------+--------------+---------------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | 555-1234     | alice@example.com   |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | 555-5678     | bob@example.com     |
+| 24e216a1-b8b1-11ef-b533-34415dee36f3 | 555-9012     | charlie@example.com |
++--------------------------------------+--------------+---------------------+
+3 rows in set (0.001 sec)
+
+MariaDB [baza]> INSERT INTO ContactUserInformation (user_id, Phone_Number, Email) VALUES
+    -> ((SELECT id FROM User WHERE first_name = 'Jan'), '123-456', 'Jan@example.com');
+Query OK, 1 row affected (0.006 sec)
+
+MariaDB [baza]> SELECT * FROM ContactUserInformation;
++--------------------------------------+--------------+---------------------+
+| user_id                              | Phone_Number | Email               |
++--------------------------------------+--------------+---------------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | 555-1234     | alice@example.com   |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | 555-5678     | bob@example.com     |
+| 24e216a1-b8b1-11ef-b533-34415dee36f3 | 555-9012     | charlie@example.com |
+| a4cb5b62-b8b1-11ef-b533-34415dee36f3 | 123-456      | Jan@example.com     |
++--------------------------------------+--------------+---------------------+
+4 rows in set (0.001 sec)
+
+MariaDB [baza]> UPDATE ContactUserInformation
+    -> SET Phone_Number = '+48111222333'
+    -> WHERE user_id = (SELECT id FROM User WHERE first_name = 'Jan');
+Query OK, 1 row affected (0.003 sec)
+
+MariaDB [baza]> SELECT * FROM ContactUserInformation;
++--------------------------------------+--------------+---------------------+
+| user_id                              | Phone_Number | Email               |
++--------------------------------------+--------------+---------------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | 555-1234     | alice@example.com   |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | 555-5678     | bob@example.com     |
+| a4cb5b62-b8b1-11ef-b533-34415dee36f3 | +48111222333 | Jan@example.com     |
++--------------------------------------+--------------+---------------------+
+
+\end{verbatim}
+\subsection{Delete}
+
+\subsubsection*{Usunięcie użytkownika, sprawdzenie czy \texttt{ON CASCADE DELETE} działa prawidłowo:}
+
+\begin{verbatim}
+MariaDB [baza]> SELECT * FROM User;
++--------------------------------------+------------+-----------+---------+------------+
+| id                                   | first_name | last_name | Role_ID | hire_date  |
++--------------------------------------+------------+-----------+---------+------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | Alice      | Smith     |       1 | 2020-01-15 |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | Bob        | Johnson   |       2 | 2021-06-01 |
+| 24e216a1-b8b1-11ef-b533-34415dee36f3 | Charlie    | Brown     |       3 | 2022-09-12 |
+| a4cb5b62-b8b1-11ef-b533-34415dee36f3 | Jan        | Kowalski  |       1 | 2024-12-12 |
++--------------------------------------+------------+-----------+---------+------------+
+4 rows in set (0.001 sec)
+
+MariaDB [baza]> SELECT * FROM ContactUserInformation;
++--------------------------------------+--------------+---------------------+
+| user_id                              | Phone_Number | Email               |
++--------------------------------------+--------------+---------------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | 555-1234     | alice@example.com   |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | 555-5678     | bob@example.com     |
+| 24e216a1-b8b1-11ef-b533-34415dee36f3 | 555-9012     | charlie@example.com |
+| a4cb5b62-b8b1-11ef-b533-34415dee36f3 | +48111222333 | Jan@example.com     |
++--------------------------------------+--------------+---------------------+
+4 rows in set (0.001 sec)
+
+MariaDB [baza]> SELECT rr.user_id, u.first_name 
+    -> FROM RentalRegister rr 
+    -> JOIN User u ON rr.user_id = u.id 
+    -> WHERE u.first_name = 'Jan';
++--------------------------------------+------------+
+| user_id                              | first_name |
++--------------------------------------+------------+
+| a4cb5b62-b8b1-11ef-b533-34415dee36f3 | Jan        |
++--------------------------------------+------------+
+1 row in set (0.002 sec)
+
+MariaDB [baza]> DELETE FROM User WHERE first_name = 'Jan';
+
+MariaDB [baza]> SELECT * FROM User;
++--------------------------------------+------------+-----------+---------+------------+
+| id                                   | first_name | last_name | Role_ID | hire_date  |
++--------------------------------------+------------+-----------+---------+------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | Alice      | Smith     |       1 | 2020-01-15 |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | Bob        | Johnson   |       2 | 2021-06-01 |
+| 24e216a1-b8b1-11ef-b533-34415dee36f3 | Charlie    | Brown     |       3 | 2022-09-12 |
++--------------------------------------+------------+-----------+---------+------------+
+3 rows in set (0.001 sec)
+
+MariaDB [baza]> SELECT * FROM ContactUserInformation;
++--------------------------------------+--------------+---------------------+
+| user_id                              | Phone_Number | Email               |
++--------------------------------------+--------------+---------------------+
+| 24e211ec-b8b1-11ef-b533-34415dee36f3 | 555-1234     | alice@example.com   |
+| 24e215be-b8b1-11ef-b533-34415dee36f3 | 555-5678     | bob@example.com     |
+| 24e216a1-b8b1-11ef-b533-34415dee36f3 | 555-9012     | charlie@example.com |
++--------------------------------------+--------------+---------------------+
+3 rows in set (0.001 sec)
+
+MariaDB [baza]> SELECT rr.user_id, u.first_name 
+    -> FROM RentalRegister rr 
+    -> JOIN User u ON rr.user_id = u.id 
+    -> WHERE u.first_name = 'Jan';
+Empty set (0.002 sec)
+\end{verbatim}
+
+\subsubsection*{Usunięcie sprzętu, sprawdzenie czy \texttt{ON CASCADE DELETE} działa prawidłowo:}
+
+\begin{verbatim}
+MariaDB [baza]> SELECT name FROM Equipment;
++---------------+
+| name          |
++---------------+
+| Laptop        |
+| Raspberry     |
+| Drill         |
+| Laptop Lenovo |
++---------------+
+4 rows in set (0.001 sec)
+
+MariaDB [baza]> SELECT eq.name 
+    -> FROM RentalRegister rr 
+    -> JOIN Equipment eq ON rr.equipment_id = eq.id 
+    -> WHERE eq.name = 'Laptop';
++--------+
+| name   |
++--------+
+| Laptop |
++--------+
+1 row in set (0.001 sec)
+
+MariaDB [baza]> SELECT eq.name 
+    -> FROM RentalEquipment rr 
+    -> JOIN Equipment eq ON rr.equipment_id = eq.id 
+    -> WHERE eq.name = 'Laptop';
++--------+
+| name   |
++--------+
+| Laptop |
++--------+
+1 row in set (0.002 sec)
+
+MariaDB [baza]> DELETE FROM Equipment
+    -> WHERE name = 'Laptop';
+Query OK, 1 row affected (0.005 sec)
+
+MariaDB [baza]> SELECT name FROM Equipment;
++---------------+
+| name          |
++---------------+
+| Raspberry     |
+| Drill         |
+| Laptop Lenovo |
++---------------+
+3 rows in set (0.001 sec)
+
+MariaDB [baza]> SELECT eq.name 
+    -> FROM RentalRegister rr 
+    -> JOIN Equipment eq ON rr.equipment_id = eq.id 
+    -> WHERE eq.name = 'Laptop';
+Empty set (0.001 sec)
+
+MariaDB [baza]> SELECT eq.name 
+    -> FROM RentalEquipment rr 
+    -> JOIN Equipment eq ON rr.equipment_id = eq.id 
+    -> WHERE eq.name = 'Laptop';
+Empty set (0.001 sec)
+\end{verbatim}
+
+\subsection{Wnioski}
+
+Przeprowadzone testy potwierdziły, że baza danych działa prawidłowo i zgodnie z założeniami:
+
+1. Operacje aktualizacji (UPDATE) w tabeli \texttt{Equipment} przebiegły pomyślnie. Zmiana statusu sprzętu została prawidłowo odzwierciedlona w tabeli, co potwierdzają wyniki zapytań \texttt{SELECT} przed i po modyfikacji.
+
+2. Operacje dodawania (INSERT) w tabeli \texttt{ContactUserInformation} pozwoliły poprawnie dodać dane kontaktowe dla użytkownika „Jan”, a następnie zaktualizować jego numer telefonu. Wyniki zapytań potwierdzają integralność danych oraz zgodność z założonymi regułami.
+
+3. Mechanizm \texttt{ON CASCADE DELETE} działa zgodnie z oczekiwaniami:
+   - Usunięcie użytkownika z tabeli \texttt{User} spowodowało automatyczne usunięcie jego danych z tabeli \texttt{ContactUserInformation} oraz powiązań w tabeli \texttt{RentalRegister}.
+   - Usunięcie sprzętu z tabeli \texttt{Equipment} doprowadziło do automatycznego usunięcia jego powiązań w tabelach \texttt{RentalRegister} i \texttt{RentalEquipment}.
+
+4. Wszystkie operacje modyfikacji i usuwania danych zostały wykonane zgodnie z założeniami projektowymi, zapewniając spójność i integralność danych w bazie.
+
+5. Wszystkie role mają odpowiedni stopień uprawnień.
+
+
+Podsumowując, baza danych spełnia wszystkie wymagania.
 
 \end{document}
