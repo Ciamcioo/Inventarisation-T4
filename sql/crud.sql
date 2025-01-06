@@ -2,44 +2,44 @@
 -- CREATE - Wstawianie nowych danych
 -- ================================
 
-INSERT INTO User (id, first_name, last_name, Role_id, hire_date) VALUES
+INSERT INTO user (id, first_name, last_name, role_id, hire_date) VALUES
 (UUID(), 'Jan', 'Kowalski', 1, '2024-12-12');
 
-INSERT INTO Equipment (id, name, quantity, description, technical_status_id, status_id, category_id, location_id) VALUES
+INSERT INTO equipment (id, name, quantity, description, technical_status_id, status_id, category_id, location_id) VALUES
 (UUID(), 'Laptop Lenovo', 3, 'laptop', 1, 1, 1, 1);
 
-INSERT INTO RentalRegister (id, user_id, equipment_id, start_date, end_date) VALUES
-(UUID(), (SELECT id FROM User WHERE first_name = 'Jan'),
-(SELECT id FROM Equipment WHERE name = 'Laptop Lenovo'), '2024-01-01', '2024-01-10');
+INSERT INTO rental_register (id, user_id, equipment_id, start_date, end_date) VALUES
+(UUID(), (SELECT id FROM user WHERE first_name = 'Jan'),
+(SELECT id FROM equipment WHERE name = 'Laptop Lenovo'), '2024-01-01', '2024-01-10');
 
-INSERT INTO ReservationRegister (reservation_id, user_id, timeout, start_date, end_date, equipment_id) VALUES
-(UUID(), (SELECT id FROM User WHERE first_name = 'Jan'), '2024-03-01', '2024-03-01', '2024-03-07', 
- (SELECT id FROM Equipment WHERE name = 'Laptop Lenovo'));
+INSERT INTO reservation_register (reservation_id, user_id, timeout, start_date, end_date, equipment_id) VALUES
+(UUID(), (SELECT id FROM user WHERE first_name = 'Jan'), '2024-03-01', '2024-03-01', '2024-03-07', 
+ (SELECT id FROM equipment WHERE name = 'Laptop Lenovo'));
 
 -- ================================
 -- READ - Pobieranie danych
 -- ================================
 
 -- Pobierz wszystkich użytkowników
-SELECT * FROM User;
+SELECT * FROM user;
 
 -- Pobierz dostępny sprzęt w lokalizacji 1
-SELECT eq.name, s.name, location_id FROM Equipment eq
-JOIN Status s ON eq.status_id = s.id
+SELECT eq.name, s.name, location_id FROM equipment eq
+JOIN status s ON eq.status_id = s.id
 WHERE location_id = 1;
 
---Pobierz historię wypożyczeń użytkownika
+-- Pobierz historię wypożyczeń użytkownika
 SELECT rr.id, rr.start_date, rr.end_date, eq.name, u.first_name
-FROM RentalRegister rr
-JOIN RentalEquipment re ON rr.id = re.rental_id
-JOIN Equipment eq ON re.equipment_id = eq.id
-JOIN User u ON rr.user_id = u.id
+FROM rental_register rr
+JOIN rental_equipment re ON rr.id = re.rental_id
+JOIN equipment eq ON re.equipment_id = eq.id
+JOIN user u ON rr.user_id = u.id
 WHERE u.first_name = 'Alice';
 
 -- Pobierz szczegóły rezerwacji dla danego sprzętu
 SELECT rr.reservation_id, rr.start_date, eq.name
-FROM ReservationRegister rr
-JOIN Equipment eq ON rr.equipment_id = eq.id
+FROM reservation_register rr
+JOIN equipment eq ON rr.equipment_id = eq.id
 WHERE eq.name = 'Laptop Lenovo';
 
 -- ================================
@@ -47,14 +47,14 @@ WHERE eq.name = 'Laptop Lenovo';
 -- ================================
 
 -- Zmień status sprzętu na „rented”
-UPDATE Equipment
+UPDATE equipment
 SET status_id = 3
 WHERE name = 'Laptop';
 
 -- Zaktualizuj numer telefonu użytkownika
-UPDATE ContactUserInformation c
-JOIN User u ON c.user_id = u.id
-SET c.Phone_Number = '+48111222333'
+UPDATE contact_user_information c
+JOIN user u ON c.user_id = u.id
+SET c.phone_number = '+48111222333'
 WHERE u.first_name = 'Jan';
 
 -- ================================
@@ -62,10 +62,10 @@ WHERE u.first_name = 'Jan';
 -- ================================
 
 -- Usuń użytkownika wraz z powiązanymi danymi
-DELETE FROM User
+DELETE FROM user
 WHERE first_name = 'Jan';
 
 -- Usuń sprzęt
-DELETE FROM Equipment
+DELETE FROM equipment
 WHERE name = 'Laptop';
 
