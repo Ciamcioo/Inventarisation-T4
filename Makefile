@@ -4,4 +4,4 @@ build:
 	latexmk -pdf ${FILE}.tex
 
 clean:
-	rm ${FILE}.aux ${FILE}.dvi ${FILE}.fdb_latexmk ${FILE}.log ${FILE}.fls ${FILE}.pdf
+	rm ${FILE}.aux ${FILE}.dvi ${FILE}.fdb_latexmk ${FILE}.log ${FILE}.fls 
