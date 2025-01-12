@@ -1,0 +1,5 @@
+com/mos/inventory/presentation/UserRestController.class
+com/mos/inventory/presistance/UserDAOImp.class
+com/mos/inventory/presentation/RoleRestController.class
+com/mos/inventory/presistance/UserDAO.class
+com/mos/inventory/presistance/RoleDAOImp.class
