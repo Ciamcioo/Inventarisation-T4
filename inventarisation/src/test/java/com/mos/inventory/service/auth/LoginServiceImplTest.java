@@ -4,6 +4,8 @@ import com.mos.inventory.entity.ContactUserInformation;
 import com.mos.inventory.entity.User;
 import com.mos.inventory.presistance.ContactUserInformationDAO;
 import com.mos.inventory.presistance.UserDAO;
+import com.mos.inventory.service.mediator.ServiceMediator;
+import com.mos.inventory.service.session.SessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,17 +18,21 @@ import static org.mockito.Mockito.when;
 
 public class LoginServiceImplTest {
     LoginService loginService;
+    ServiceMediator mediator;
+
     UserDAO userDAOMock;
     ContactUserInformationDAO contactDAO;
+
     ContactUserInformation information;
 
     @BeforeEach
     public void setup() {
+        mediator = mock(ServiceMediator.class);
         userDAOMock = mock(UserDAO.class);
         contactDAO = mock(ContactUserInformationDAO.class);
         information = new ContactUserInformation();
         information.setUserID(UUID.randomUUID());
-        loginService = new LoginServiceImp(userDAOMock, contactDAO);
+        loginService = new LoginServiceImp(mediator, userDAOMock, contactDAO);
     }
 
     @Test

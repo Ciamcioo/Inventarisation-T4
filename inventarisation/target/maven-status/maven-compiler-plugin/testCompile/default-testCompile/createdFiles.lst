@@ -1,0 +1,3 @@
+com/mos/inventory/InventoryAppTest.class
+com/mos/inventory/service/auth/LoginServiceImplTest.class
+com/mos/inventory/presistence/UserDAOTest.class
