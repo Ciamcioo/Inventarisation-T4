@@ -1,27 +1,32 @@
 package com.mos.inventory.service.auth;
 
+import com.mos.inventory.dto.LoginMessage;
+import com.mos.inventory.dto.LoginResult;
+import com.mos.inventory.dto.UserContext;
 import com.mos.inventory.entity.ContactUserInformation;
 import com.mos.inventory.entity.User;
 import com.mos.inventory.presistance.ContactUserInformationDAO;
 import com.mos.inventory.presistance.UserDAO;
-import com.mos.inventory.service.mediator.ServiceMediator;
-import com.mos.inventory.service.session.SessionService;
+import com.mos.inventory.service.UserContextHolder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LoginServiceImp implements  LoginService {
-    private ServiceMediator mediator;
+    private final UserDAO userDAO;
+    private final ContactUserInformationDAO contactUserInformationDAO;
+    private final UserContextHolder userContextHolder;
 
-    private UserDAO userDAO;
-    private ContactUserInformationDAO contactUserInformationDAO;
+    private UserContext userContext;
 
 
     @Autowired
-    public LoginServiceImp(ServiceMediator mediator, UserDAO userDAO, ContactUserInformationDAO contactUserInformationDAO) {
-        this.mediator = mediator;
+    public LoginServiceImp(UserDAO userDAO, ContactUserInformationDAO contactUserInformationDAO, UserContextHolder userContextHolder) {
         this.userDAO = userDAO;
         this.contactUserInformationDAO = contactUserInformationDAO;
+        this.userContextHolder = userContextHolder;
     }
 
     @Override
@@ -33,6 +38,30 @@ public class LoginServiceImp implements  LoginService {
             user = userDAO.findBy(contactUserInformation.getUserID());
         }
 
-        return  user != null  ? LoginResult.SUCCESSFUL : LoginResult.UNSUCCESSFUL;
+        LoginResult loginResult = createLoginResultMessage(user, email);
+
+        if (user != null) {
+            userContext = new UserContext(user, email);
+            userContextHolder.set(userContext);
+        }
+
+        return loginResult;
+
+
     }
+
+    private LoginResult createLoginResultMessage(User user, String email) {
+        if (user == null) {
+            return new LoginResult(LoginMessage.UNSUCCESSFUL, email);
+        }
+
+        return new LoginResult(LoginMessage.SUCCESSFUL,
+                               user.getFirstName(),
+                               user.getLastName(),
+                               email,
+                               user.getRole().getName());
+    }
+
+
+
 }

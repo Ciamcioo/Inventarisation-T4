@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -19,7 +20,7 @@ public class ReservationRegister {
     @JoinColumn(name = "user_id")
     private User userReservation;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(
             name = "reservation_equipment",
             joinColumns = { @JoinColumn(name = "reservation_id")},
@@ -37,7 +38,7 @@ public class ReservationRegister {
 
     @Column(name = "end_date")
     @Temporal(TemporalType.DATE)
-    private Date end_date;
+    private Date endDate;
 
     public ReservationRegister() { }
 
@@ -47,7 +48,15 @@ public class ReservationRegister {
         this.equipmentReservationList = equipmentReservationList;
         this.timeout = timeout;
         this.startDate = startDate;
-        this.end_date = end_date;
+        this.endDate = end_date;
+    }
+
+    public ReservationRegister(User userReservation, List<Equipment> equipmentReservationList, Date timeout, Date startDate, Date endDate) {
+        this.userReservation = userReservation;
+        this.equipmentReservationList = equipmentReservationList;
+        this.timeout = timeout;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
     public UUID getReservationID() {
@@ -90,11 +99,24 @@ public class ReservationRegister {
         this.startDate = startDate;
     }
 
-    public Date getEnd_date() {
-        return end_date;
+    public Date getEndDate() {
+        return endDate;
     }
 
-    public void setEnd_date(Date end_date) {
-        this.end_date = end_date;
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ReservationRegister that = (ReservationRegister) o;
+        return Objects.equals(reservationID, that.reservationID) && Objects.equals(userReservation, that.userReservation) && Objects.equals(equipmentReservationList, that.equipmentReservationList) && Objects.equals(timeout, that.timeout) && Objects.equals(startDate, that.startDate) && Objects.equals(endDate, that.endDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(reservationID, userReservation, equipmentReservationList, timeout, startDate, endDate);
     }
 }

@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Repository
 public class UserDAOImp implements UserDAO{
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     @Autowired
     public UserDAOImp(EntityManager entityManager) {
@@ -23,8 +23,7 @@ public class UserDAOImp implements UserDAO{
     @Override
     public List<User> findAll() {
         TypedQuery<User> query = entityManager.createQuery("FROM User", User.class);
-        List<User> users = query.getResultList();
-        return users;
+        return query.getResultList();
     }
 
     @Override

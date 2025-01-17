@@ -1,66 +1,76 @@
 package com.mos.inventory.service.auth;
 
-import com.mos.inventory.entity.ContactUserInformation;
+import com.mos.inventory.dto.LoginMessage;
+import com.mos.inventory.dto.LoginResult;
+import com.mos.inventory.entity.Role;
 import com.mos.inventory.entity.User;
 import com.mos.inventory.presistance.ContactUserInformationDAO;
 import com.mos.inventory.presistance.UserDAO;
-import com.mos.inventory.service.mediator.ServiceMediator;
-import com.mos.inventory.service.session.SessionService;
+import com.mos.inventory.service.UserContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
+import static org.assertj.core.api.Fail.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class LoginServiceImplTest {
     LoginService loginService;
-    ServiceMediator mediator;
+    UserDAO userDAO = null;
+    UserContextHolder userContextHolder;
 
-    UserDAO userDAOMock;
-    ContactUserInformationDAO contactDAO;
+    ContactUserInformationDAO contactUserInformationDAO = null;
 
-    ContactUserInformation information;
+    LoginResult validResult;
+    LoginResult invalidResult;
+
+    User validUser = new User();
+    User invalidUser;
+    String email;
+    Role role = new Role();
+
 
     @BeforeEach
-    public void setup() {
-        mediator = mock(ServiceMediator.class);
-        userDAOMock = mock(UserDAO.class);
-        contactDAO = mock(ContactUserInformationDAO.class);
-        information = new ContactUserInformation();
-        information.setUserID(UUID.randomUUID());
-        loginService = new LoginServiceImp(mediator, userDAOMock, contactDAO);
+    void setup() {
+        userContextHolder = mock(UserContextHolder.class);
+        loginService = new LoginServiceImp(userDAO, contactUserInformationDAO, userContextHolder);
+
+        validUser.setFirstName("John");
+        validUser.setLastName("Doe");
+        email = "johndoe@example.com";
+        role.setName("exampleRole");
+        validUser.setRole(role);
+
+
+        validResult = new LoginResult(LoginMessage.SUCCESSFUL, email);
+        validResult.setUserFirstName(validUser.getFirstName());
+        validResult.setUserLastName(validUser.getLastName());
+        validResult.setUserEmail(email);
+        validResult.setUserRoleName(validUser.getRole().getName());
+
+        invalidResult = new LoginResult(LoginMessage.UNSUCCESSFUL, email);
+
+    }
+    @Test
+    void validateLoginResultMessageForValidUser() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method createLoginResultMessage = LoginServiceImp.class.getDeclaredMethod("createLoginResultMessage", User.class, String.class);
+        createLoginResultMessage.setAccessible(true);
+
+        LoginResult  loginResult = (LoginResult) createLoginResultMessage.invoke(loginService, validUser, email);
+
+        assertEquals(validResult, loginResult);
     }
 
     @Test
-    public void successfulLoginForEmail() {
-        when(contactDAO.findBy("dummy@dummy.com")).thenReturn(information);
-        when(contactDAO.findBy("notDummy@dummy.com")).thenReturn(information);
+    void invalidUserPassed_WillReturnInvalidLoginResult() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method createLoginResultMessage = LoginServiceImp.class.getDeclaredMethod("createLoginResultMessage", User.class, String.class);
+        createLoginResultMessage.setAccessible(true);
 
+        LoginResult  loginResult = (LoginResult) createLoginResultMessage.invoke(loginService, invalidUser, email);
 
-        when(userDAOMock.findBy(any(UUID.class))).thenReturn(new User());
-        when(userDAOMock.findBy(any(UUID.class))).thenReturn(new User());
-
-        assertEquals(LoginResult.SUCCESSFUL, loginService.login("dummy@dummy.com"));
-        assertEquals(LoginResult.SUCCESSFUL, loginService.login("notDummy@dummy.com"));
+        assertEquals(invalidResult, loginResult);
     }
-
-    @Test
-    public void unsuccessfulLoginForEmail() {
-        assertEquals(LoginResult.UNSUCCESSFUL, loginService.login("dummy2@dummy.com"));
-        assertEquals(LoginResult.UNSUCCESSFUL, loginService.login("dummy@notDummy.com"));
-    }
-
-    @Test
-    public void contactUserInformationReturnsNullForSpecifiedEmail() {
-        when(contactDAO.findBy("dummy@dummy.com")).thenReturn(null);
-        assertEquals(LoginResult.UNSUCCESSFUL, loginService.login("dummy@dummy.com"));
-    }
-
-
-
-
 }

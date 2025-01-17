@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class ContactUserInformationDAOImpl implements ContactUserInformationDAO {
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     public ContactUserInformationDAOImpl(EntityManager entityManager) {
         this.entityManager = entityManager;
