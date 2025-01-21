@@ -16,6 +16,10 @@ public class TechnicalStatus {
 
     public TechnicalStatus() { }
 
+    public TechnicalStatus(int id) {
+        this.id = id;
+    }
+
     public TechnicalStatus(String description, int id) {
         this.description = description;
         this.id = id;

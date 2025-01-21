@@ -1,43 +1,41 @@
 package com.mos.inventory.service.session;
 
-import com.mos.inventory.dto.ReservationMessage;
-import com.mos.inventory.dto.ReservationResult;
-import com.mos.inventory.dto.UserContext;
-import com.mos.inventory.entity.Equipment;
-import com.mos.inventory.entity.ReservationRegister;
-import com.mos.inventory.entity.Role;
-import com.mos.inventory.entity.User;
+import com.mos.inventory.dto.*;
+import com.mos.inventory.entity.*;
 import com.mos.inventory.presistance.EquipmentDAO;
+import com.mos.inventory.presistance.RentalDAO;
 import com.mos.inventory.presistance.ReservationDAO;
 import com.mos.inventory.service.UserContextHolder;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class ReservationServiceTest {
     ReservationService reservationService;
 
     UserContextHolder userContextHolder;
+    EquipTxnValidator validator;
     EquipmentDAO equipmentDAO;
     ReservationDAO reservationDAO;
+    RentalDAO rentalDAO;
     User user;
+    String transactionType = "RESERVATION";
 
     Set<UUID> correctEquipmentID = new HashSet<>();
     Date startDate = new Date();
     Date endDate = new Date();
 
-    ReservationResult userErrorReservationResult = new ReservationResult(ReservationMessage.USER_ERROR);
-    ReservationResult equipmentListErrorReservationResult = new ReservationResult(ReservationMessage.EQUIPMENT_ID_LIST_ERROR);
-    ReservationResult successfulReservationResult = new ReservationResult(ReservationMessage.SUCCESSFUL_RESERVATION);
-    ReservationResult dataErrorReservationResult = new ReservationResult(ReservationMessage.DATE_ERROR);
-    ReservationResult reservationErrorReservationResult = new ReservationResult(ReservationMessage.RESERVATION_ERROR);
+    EquipTransactionResult userErrorEquipTransactionResult = new EquipTransactionResult(EquipTransactionMessage.USER_ERROR);
+    EquipTransactionResult equipmentListErrorEquipTransactionResult = new EquipTransactionResult(EquipTransactionMessage.EQUIPMENT_ID_LIST_ERROR);
+    EquipTransactionResult successfulEquipTransactionResult = new EquipTransactionResult(EquipTransactionMessage.SUCCESSFUL_RESERVATION);
+    EquipTransactionResult dataErrorEquipTransactionResult = new EquipTransactionResult(EquipTransactionMessage.DATE_ERROR);
+    EquipTransactionResult reservationErrorEquipTransactionResult = new EquipTransactionResult(EquipTransactionMessage.RESERVATION_ERROR);
 
 
 
@@ -46,7 +44,8 @@ public class ReservationServiceTest {
         userContextHolder = mock(UserContextHolder.class);
         equipmentDAO = mock(EquipmentDAO.class);
         reservationDAO = mock(ReservationDAO.class);
-        reservationService = new ReservationServiceImpl(equipmentDAO, reservationDAO, userContextHolder);
+        validator = mock(EquipTxnValidator.class);
+        reservationService = new EquipTxnService(equipmentDAO, reservationDAO, userContextHolder, validator, rentalDAO);
 
         user = new User();
         user.setId(UUID.randomUUID());
@@ -59,15 +58,19 @@ public class ReservationServiceTest {
         userContextHolder.set(null);
         correctEquipmentID.add(UUID.randomUUID());
 
+        when(userContextHolder.get()).thenReturn(new UserContext());
+
     }
 
     @Test
     void userContextIsNull_ReservationResultNotSuccessful() {
         reservationService.setUserContextForService(null);
         userContextHolder.set(null);
+        when(validator.validateInputData(correctEquipmentID, startDate, endDate, transactionType))
+                .thenReturn(Optional.of(new EquipTransactionResult(EquipTransactionMessage.USER_ERROR)));
 
-        assertEquals(userErrorReservationResult,
-                     reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(userErrorEquipTransactionResult,
+                     reservationService.createReservation(correctEquipmentID, startDate, endDate, transactionType));
 
     }
 
@@ -77,21 +80,24 @@ public class ReservationServiceTest {
         userContextHolder.set(new UserContext(user, "dummy@dummy.com"));
 
         when(userContextHolder.get()).thenReturn(new UserContext(user, "dummy@dummy.com"));
+        when(validator.validateInputData(correctEquipmentID,startDate,endDate,transactionType))
+                .thenReturn(Optional.of(new EquipTransactionResult(EquipTransactionMessage.SUCCESSFUL_RESERVATION)));
 
-        assertEquals(successfulReservationResult,
-                reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(successfulEquipTransactionResult,
+                reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType));
     }
 
     @Test
     void userContextInReservationServiceNotNull_ReservationResultSuccessful() {
-        assertEquals(successfulReservationResult,
-                reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(successfulEquipTransactionResult,
+                reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType));
     }
 
     @Test
     void equipmentIDListIsEmpty_ReservationResultContainsEquipmentIDError() {
-        assertEquals(equipmentListErrorReservationResult,
-                reservationService.createReservation(new HashSet<>(), startDate, endDate));
+        when(validator.validateInputData(new HashSet<>(),startDate,endDate,transactionType)).thenReturn(Optional.of(new EquipTransactionResult(EquipTransactionMessage.EQUIPMENT_ID_LIST_ERROR)));
+        assertEquals(equipmentListErrorEquipTransactionResult,
+                reservationService.createReservation(new HashSet<>(), startDate, endDate,transactionType));
     }
 
     @Test
@@ -101,9 +107,11 @@ public class ReservationServiceTest {
         calendar.add(Calendar.DATE, -30);
         Date startDateFromPast = calendar.getTime();
 
+        when(validator.validateInputData(correctEquipmentID,startDateFromPast,endDate,transactionType)).thenReturn(Optional.of(new EquipTransactionResult(EquipTransactionMessage.DATE_ERROR)));
 
-        assertEquals(dataErrorReservationResult,
-               reservationService.createReservation(correctEquipmentID, startDateFromPast, endDate));
+
+        assertEquals(dataErrorEquipTransactionResult,
+               reservationService.createReservation(correctEquipmentID, startDateFromPast, endDate,transactionType));
     }
 
     @Test
@@ -112,9 +120,10 @@ public class ReservationServiceTest {
         calendar.add(Calendar.DATE, -30);
         Date endDateFromPast = calendar.getTime();
 
+        when(validator.validateInputData(correctEquipmentID,startDate,endDateFromPast,transactionType)).thenReturn(Optional.of(new EquipTransactionResult(EquipTransactionMessage.DATE_ERROR)));
 
-        assertEquals(dataErrorReservationResult,
-                reservationService.createReservation(correctEquipmentID, startDate, endDateFromPast));
+        assertEquals(dataErrorEquipTransactionResult,
+                reservationService.createReservation(correctEquipmentID, startDate, endDateFromPast,transactionType));
     }
 
     @Test
@@ -125,9 +134,10 @@ public class ReservationServiceTest {
         calendar.add(Calendar.DATE, -15);
         endDate = calendar.getTime();
 
+        when(validator.validateInputData(correctEquipmentID,startDate,endDate,transactionType)).thenReturn(Optional.of(new EquipTransactionResult(EquipTransactionMessage.DATE_ERROR)));
 
-        assertEquals(dataErrorReservationResult,
-                reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(dataErrorEquipTransactionResult,
+                reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType));
     }
 
     @Test
@@ -135,17 +145,18 @@ public class ReservationServiceTest {
         List<ReservationRegister> userReservations = new ArrayList<>();
         userReservations.add(new ReservationRegister());
         when(reservationDAO.findReservationsBy(any(UUID.class))).thenReturn(userReservations);
+        when(validator.validateInputData(correctEquipmentID, startDate, endDate,transactionType)).thenReturn(Optional.of(new EquipTransactionResult(EquipTransactionMessage.RESERVATION_ERROR)));
 
-        assertEquals(reservationErrorReservationResult,
-               reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(reservationErrorEquipTransactionResult,
+               reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType));
     }
 
     @Test
     void sessionUserWhoIsRecruitCurrentlyDoesNotHaveReservations_ReservationServiceWillReturnReservationSuccessful() {
         when(reservationDAO.findReservationsBy(any(UUID.class))).thenReturn(new ArrayList<>());
 
-        assertEquals(successfulReservationResult,
-                reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(successfulEquipTransactionResult,
+                reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType));
     }
 
     @Test
@@ -161,8 +172,8 @@ public class ReservationServiceTest {
 
         when(equipmentDAO.findAllBy(correctEquipmentID)).thenReturn(List.of(eq1, eq2));
 
-        assertEquals(successfulReservationResult,
-                reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(successfulEquipTransactionResult,
+                reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType));
 
         startQuantity = 10;
         assertEquals(startQuantity - 1, eq1.getQuantity());
@@ -183,8 +194,8 @@ public class ReservationServiceTest {
         eq2.setQuantity(startQuantity);
         when(equipmentDAO.findAllBy(correctEquipmentID)).thenReturn(List.of(eq1, eq2));
 
-        assertEquals(successfulReservationResult,
-                reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(successfulEquipTransactionResult,
+                reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType));
 
         startQuantity = 10;
         assertEquals(startQuantity - 1, eq1.getQuantity());
@@ -206,8 +217,8 @@ public class ReservationServiceTest {
 
         when(equipmentDAO.findAllBy(correctEquipmentID)).thenReturn(List.of(eq1, eq2));
 
-        assertEquals(successfulReservationResult,
-                reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(successfulEquipTransactionResult,
+                reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType));
 
         startQuantity = 10;
         assertEquals(startQuantity - 1, eq1.getQuantity());
@@ -228,8 +239,8 @@ public class ReservationServiceTest {
         eq2.setQuantity(startQuantity);
         when(equipmentDAO.findAllBy(correctEquipmentID)).thenReturn(List.of(eq1, eq2));
 
-        assertEquals(successfulReservationResult,
-                reservationService.createReservation(correctEquipmentID, startDate, endDate));
+        assertEquals(successfulEquipTransactionResult,
+                reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType));
 
         assertEquals(startQuantity , eq1.getQuantity());
 
@@ -246,7 +257,7 @@ public class ReservationServiceTest {
 
         when(equipmentDAO.findAllBy(correctEquipmentID)).thenReturn(List.of(eq1, eq2));
 
-        reservationService.createReservation(correctEquipmentID, startDate, endDate);
+        reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType);
 
         verify(reservationDAO, times(1)).insertReservation(any(ReservationRegister.class));
     }
@@ -271,9 +282,16 @@ public class ReservationServiceTest {
 
         when(equipmentDAO.findAllBy(correctEquipmentID)).thenReturn(List.of(eq1, eq2));
 
-        reservationService.createReservation(correctEquipmentID, startDate, endDate);
+        reservationService.createReservation(correctEquipmentID, startDate, endDate,transactionType);
 
-        verify(reservationDAO, times(1)).insertReservation(reservationRegister);
+        verify(reservationDAO, times(1)).insertReservation(any(ReservationRegister.class));
+    }
+
+    @Test
+    void equipTransactionResultIfValidEntryData_ShouldReturnSuccessfulEquipTxnResult() {
+        when(validator.validateInputData(correctEquipmentID, startDate, endDate,transactionType)).thenReturn(Optional.of(new EquipTransactionResult(EquipTransactionMessage.SUCCESSFUL_RESERVATION)));
+
+
     }
 
 

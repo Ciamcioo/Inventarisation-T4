@@ -19,7 +19,7 @@ public class RentalRegister {
     @JoinColumn(name = "user_id")
     private User userRental;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "rental_equipment",
             joinColumns = {@JoinColumn(name = "rental_id")},
@@ -38,6 +38,13 @@ public class RentalRegister {
 
 
     public RentalRegister() { }
+
+    public RentalRegister(User userRental, List<Equipment> equipmentRental, Date startDate, Date endDate) {
+        this.userRental = userRental;
+        this.equipmentRentalList = equipmentRental;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 
     public RentalRegister(UUID id, User userRental, List<Equipment> equipmentRentalList, Date startDate, Date endDate) {
         this.id = id;

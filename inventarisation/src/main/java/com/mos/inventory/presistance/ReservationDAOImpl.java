@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @Transactional
@@ -33,19 +34,14 @@ public class ReservationDAOImpl implements ReservationDAO {
     public void insertReservation(ReservationRegister newReservations) {
         try {
             List<Equipment> managedEquipment = newReservations.getEquipmentReservationList().stream()
-                            .map(equipment -> entityManager.contains(equipment) ? equipment : entityManager.merge(equipment)).toList();
+                            .map(equipment -> entityManager.contains(equipment) ? equipment : entityManager.merge(equipment)).collect(Collectors.toList());
 
             newReservations.setEquipmentReservationList(managedEquipment);
             entityManager.persist(newReservations);
+            entityManager.flush();
         } catch(HibernateException exception) {
             throw new InvalidInsert("Reservation couldn't be inserted into table");
         }
     }
 
-    static class InvalidInsert extends RuntimeException {
-        public InvalidInsert(String message) {
-            super(message);
-        }
-
-    }
 }

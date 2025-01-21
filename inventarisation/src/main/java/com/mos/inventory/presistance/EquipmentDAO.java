@@ -16,4 +16,7 @@ public interface EquipmentDAO {
     void updateEquipment(Equipment equipment);
 
     List<Equipment> getEquipmentTable();
+
+    boolean checkIfContainsEquipment(UUID id);
+
 }

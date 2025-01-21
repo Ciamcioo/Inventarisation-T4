@@ -1,5 +1,6 @@
 package com.mos.inventory.dto;
 
+import com.mos.inventory.entity.Role;
 import com.mos.inventory.entity.User;
 import jakarta.servlet.http.HttpSession;
 
@@ -40,6 +41,15 @@ public class UserContext {
 
     public String getUserRoleName() {
         return user.getRole().getName();
+    }
+
+    // Method for testing
+    public void setUserRoleDescription(String roleDescription) {
+        if (this.user.getRole() == null) {
+           this.user.setRole(new Role());
+        }
+
+        this.user.getRole().setName(roleDescription);
     }
 
     @Override

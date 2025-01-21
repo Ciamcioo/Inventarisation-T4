@@ -1,12 +1,8 @@
 package com.mos.inventory.presentation;
 
-import com.mos.inventory.dto.FetchingMessage;
-import com.mos.inventory.dto.FetchingResult;
-import com.mos.inventory.dto.ReservationRequest;
-import com.mos.inventory.dto.ReservationResult;
+import com.mos.inventory.dto.*;
 import com.mos.inventory.entity.Equipment;
 import com.mos.inventory.entity.Location;
-import com.mos.inventory.entity.ReservationRegister;
 import com.mos.inventory.entity.Status;
 import com.mos.inventory.service.session.FetchingService;
 import com.mos.inventory.service.session.ReservationService;
@@ -31,16 +27,17 @@ public class RecruitRestController {
     }
 
 
-    @PostMapping("/reservation")
-    public ReservationResult makeReservation(@RequestBody ReservationRequest request) {
+    @PostMapping("/make/reservation")
+    public EquipTransactionResult makeReservation(@RequestBody EquipTransactionRequest request) {
 
         return reservationService.createReservation(request.getEquipmentIDs(),
                                                     request.getStartDate(),
-                                                    request.getEndDate());
+                                                    request.getEndDate(),
+                                                    request.getTransactionType());
     }
 
     @RequestMapping("/equipment/list")
-    public List<Equipment> getEquipmentList() {
+    public List<Equipment> getEquipment() {
         Optional<List<Equipment>> equipmentList = fetchingService.getEquipmentList();
         return equipmentList.orElse(new ArrayList<>());
     }
@@ -58,8 +55,8 @@ public class RecruitRestController {
     }
 
     @RequestMapping("/current/reservations")
-    public List<ReservationRegister> getReservationForCurrentUser() {
-        Optional<List<ReservationRegister>> reservationList = fetchingService.getReservationListForSessionUser();
+    public List<ReservationContext> getReservationForCurrentUser() {
+        Optional<List<ReservationContext>> reservationList = fetchingService.getReservationListForSessionUser();
         return reservationList.orElse(new ArrayList<>());
 
     }

@@ -1,11 +1,10 @@
 package com.mos.inventory.service.session;
 
+import com.mos.inventory.dto.RentalContext;
+import com.mos.inventory.dto.ReservationContext;
 import com.mos.inventory.dto.UserContext;
 import com.mos.inventory.entity.*;
-import com.mos.inventory.presistance.EquipmentDAO;
-import com.mos.inventory.presistance.LocationDAO;
-import com.mos.inventory.presistance.ReservationDAO;
-import com.mos.inventory.presistance.StatusDAO;
+import com.mos.inventory.presistance.*;
 import com.mos.inventory.service.UserContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,12 +15,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class FetchingServiceTest {
     FetchingService fetchingService;
+    RentalDAO rentalDAO;
     ReservationDAO reservationDAO;
     StatusDAO statusDAO;
     LocationDAO locationDAO;
@@ -32,8 +30,15 @@ public class FetchingServiceTest {
     List<Location> locationList;
     List<Status> statusList;
     List<ReservationRegister> reservationRegisterList;
+    List<RentalRegister> rentalRegisterList;
     @BeforeEach
     void setup() {
+        rentalRegisterList = new ArrayList<>();
+
+        rentalRegisterList.add(new RentalRegister());
+        rentalRegisterList.add(new RentalRegister());
+        rentalRegisterList.add(new RentalRegister());
+
         reservationRegisterList = new ArrayList<>();
 
         reservationRegisterList.add(new ReservationRegister());
@@ -58,13 +63,19 @@ public class FetchingServiceTest {
         statusList.add(new Status());
         statusList.add(new Status());
 
+        rentalDAO = mock(RentalDAO.class);
         reservationDAO = mock(ReservationDAO.class);
         statusDAO = mock(StatusDAO.class);
         locationDAO = mock(LocationDAO.class);
         equipmentDAO = mock(EquipmentDAO.class);
         userContextHolder = mock(UserContextHolder.class);
 
-        fetchingService = new FetchingServiceImpl(reservationDAO, statusDAO, locationDAO, equipmentDAO, userContextHolder);
+        fetchingService = new FetchingServiceImpl(rentalDAO,
+                                                  reservationDAO,
+                                                  statusDAO,
+                                                  locationDAO,
+                                                  equipmentDAO,
+                                                  userContextHolder);
 
 
     }
@@ -148,10 +159,49 @@ public class FetchingServiceTest {
         when(userContextHolder.get()).thenReturn(new UserContext(user, "dummy@dummy.com"));
         when(reservationDAO.findReservationsBy(uuid)).thenReturn(reservationRegisterList);
 
-        Optional<List<ReservationRegister>> reservationList = fetchingService.getReservationListForSessionUser();
+        Optional<List<ReservationContext>> reservationList = fetchingService.getReservationListForSessionUser();
         assertTrue(reservationList.isPresent());
         assertFalse(reservationList.get().isEmpty());
+    }
 
+    @Test
+    void getRentalContextListForUserWhoIsLoggedIn_ShouldReturnNotEmptyOptional() {
+        when(userContextHolder.get()).thenReturn(new UserContext(new User(), "dummy@dummy.com"));
+
+        assertTrue(fetchingService.getRentalListForSessionUser().isPresent());
+    }
+
+    @Test
+    void getRentalContextListForUserWhoIsLoggedIn_ListShouldNotBeEmpty() {
+        UUID uuid = UUID.randomUUID();
+        User user = new User();
+        user.setId(uuid);
+
+        when(userContextHolder.get()).thenReturn(new UserContext(user, "dummy@dummy@gmail.com"));
+        when(rentalDAO.findRentalsFor(uuid)).thenReturn(rentalRegisterList);
+
+        assertTrue(fetchingService.getRentalListForSessionUser().isPresent());
+        assertEquals(3, fetchingService.getRentalListForSessionUser().get().size());
+    }
+
+    @Test
+    void getRentalContextListForUserWhoIsNotLoggedIn_OptionalShouldBeEmpty() {
+        assertFalse(fetchingService.getRentalListForSessionUser().isPresent());
+    }
+
+    @Test
+    void getRentalContextListForUserWhoHasTwoRentals_OptionalShouldReturnRentalListWithWTwoElements() {
+        rentalRegisterList.remove(0);
+        UUID uuid = UUID.randomUUID();
+        User user = new User();
+        user.setId(uuid);
+
+        when(userContextHolder.get()).thenReturn(new UserContext(user, "dummy@dummy@gmail.com"));
+        when(rentalDAO.findRentalsFor(user.getId())).thenReturn(rentalRegisterList);
+
+        assertEquals(2, fetchingService.getRentalListForSessionUser().get().size());
+
+        verify(rentalDAO).findRentalsFor(uuid);
     }
 
 }

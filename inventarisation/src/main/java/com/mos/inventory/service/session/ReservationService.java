@@ -1,6 +1,6 @@
 package com.mos.inventory.service.session;
 
-import com.mos.inventory.dto.ReservationResult;
+import com.mos.inventory.dto.EquipTransactionResult;
 import com.mos.inventory.dto.UserContext;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.util.UUID;
 @Service
 public interface ReservationService {
 
-    ReservationResult createReservation(Set<UUID> equipmentID, Date startDate, Date endDate);
+    EquipTransactionResult createReservation(Set<UUID> equipmentID, Date startDate, Date endDate, String transactionType);
 
     void setUserContextForService(UserContext userContext);
 }

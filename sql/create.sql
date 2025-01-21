@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS baza;
+CREATE DATABASE IF NOT EXISTS baza_test;
 USE baza;
 
 CREATE TABLE role (
@@ -93,9 +93,9 @@ CREATE TABLE reservation_equipment (
 CREATE TABLE rental_equipment (
     rental_id UUID NOT NULL,
     equipment_id UUID NOT NULL,
-    technical_status INT NOT NULL,
-    identifier UUID NOT NULL,
-    quantity INT NOT NULL,
+    technical_status INT NOT NULL DEFAULT 1,
+    identifier UUID NOT NULL DEFAULT UUID(),
+    quantity INT NOT NULL DEFAULT 1, 
     PRIMARY KEY (rental_id, equipment_id),
     FOREIGN KEY (rental_id) REFERENCES rental_register(id) ON DELETE CASCADE,
     FOREIGN KEY (equipment_id) REFERENCES equipment(id) ON DELETE CASCADE

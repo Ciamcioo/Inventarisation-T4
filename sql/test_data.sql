@@ -1,12 +1,14 @@
 INSERT INTO role (name) VALUES 
 ('Admin'), 
-('Manager'), 
-('User');
+('Zarzad'), 
+('Mosowicz'),
+('Rekrut');
 
 INSERT INTO location (name, role_id) VALUES 
 ('T4', 1),
 ('T4', 2),
-('T4', 3);
+('T4', 3),
+('T4', 4);
 
 INSERT INTO user (id, first_name, last_name, role_id, hire_date) VALUES 
 (UUID(), 'Alice', 'Smith', 1, '2020-01-15'),

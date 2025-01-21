@@ -5,3 +5,5 @@
 *.fls
 .idea/
 target/
+inventarisation/FitNesseRoot/
+inventarisation/fitnesse-standalone.jar

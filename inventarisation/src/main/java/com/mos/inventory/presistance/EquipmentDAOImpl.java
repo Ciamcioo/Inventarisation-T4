@@ -46,10 +46,20 @@ public class EquipmentDAOImpl implements  EquipmentDAO {
         return query.getResultList();
     }
 
+    @Override
+    public boolean checkIfContainsEquipment(UUID id) {
+        Equipment equipment = entityManager.find(Equipment.class, id);
+        return checkIfEquipmentIsNotNull(equipment);
+    }
+
+    private boolean checkIfEquipmentIsNotNull(Equipment equipment) {
+        return equipment != null;
+
+    }
+
     public static class UpdatedFailException extends RuntimeException {
         public UpdatedFailException(String message) {
             super(message);
         }
-
     }
 }

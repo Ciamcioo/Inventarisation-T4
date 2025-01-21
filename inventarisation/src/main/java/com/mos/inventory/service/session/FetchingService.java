@@ -1,5 +1,7 @@
 package com.mos.inventory.service.session;
 
+import com.mos.inventory.dto.RentalContext;
+import com.mos.inventory.dto.ReservationContext;
 import com.mos.inventory.entity.*;
 
 import java.util.List;
@@ -14,6 +16,9 @@ public interface FetchingService {
 
     Optional<List<Status>> getStatusList();
 
+    Optional<List<ReservationContext>> getReservationListForSessionUser();
 
-    Optional<List<ReservationRegister>> getReservationListForSessionUser();
+    Optional<List<RentalContext>> getRentalListForSessionUser();
+
+
 }
