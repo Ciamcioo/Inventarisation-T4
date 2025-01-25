@@ -4,6 +4,28 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
+\usepackage{listings}
+\usepackage{xcolor}
+\sloppy 
+
+\lstdefinestyle{javaStyle}{
+    language=Java,
+    basicstyle=\ttfamily\footnotesize, % Czcionka kodu
+    keywordstyle=\color{blue},         % Kolor słów kluczowych
+    commentstyle=\color{gray},         % Kolor komentarzy
+    stringstyle=\color{red},           % Kolor stringów
+    numbers=left,                      % Numery wierszy
+    numberstyle=\tiny\color{gray},     % Styl numerów wierszy
+    stepnumber=1,                      % Numer co każdy wiersz
+    breaklines=true,                   % Łamanie długich linii
+    tabsize=4                          % Wielkość tabulacji
+}
+\lstset{
+    breaklines=true,      % Łamanie długich linii
+    breakatwhitespace=true, % Łamanie tylko w miejscach białych znaków
+    columns=fullflexible, % Pozwala na dynamiczne dostosowanie szerokości
+    basicstyle=\ttfamily\footnotesize % Mniejsza czcionka
+}
 
 \title{Dokumentacja Projektu Bazy danych 2 \\ \large Inwentaryzacja Sprzętu SKN MOS }
 
@@ -849,5 +871,144 @@ Przeprowadzone testy potwierdziły, że baza danych działa prawidłowo i zgodni
 
 
 Podsumowując, baza danych spełnia wszystkie wymagania.
+
+\section{\textbf{Implementacja aplikacji}}
+
+\subsection{\textbf{Wprowadzenie}}
+
+Aplikacja obsługują prosec inwentarizacji w studenckim kole naukowym Microsystems Oriented Society jest aplikacją webową. Wykorzystanie web-u w celu komunikacji
+z aplikacją ułatwia proces wprowadzenia aplikacji w ramach społęczności koła nukowego ze względu na prostę, intuicyjność w obsłudzę oraz brak dedykowanej aplikacji, która nalezałoby zainstalować na urządzeniu.
+Jej implementacje można podzielić na dwa odrębne obszary, do których zalicza się implementacja logiki biznesowej tzw. backednu  oraz implementacja interfejsu użytkownika tzw. frontendu.
+
+
+\subsection{\textbf{Implementacja logiki biznesowej (backend)}}
+
+\subsubsection{Wykorzystane techonolgie}
+
+Do zaimplementowania logiki biznesowej w aplikacji został wykorzystany język programowania Java wraz z frameworkie SpringBoot. Język programowania Java wsprty z wykorzystanie platfromy
+Spring jest bardzo częstym połączeniem w celu implementacji apliakcji oparty o REST API. SpringBoot został wybrany ze względu na łatwość konfiguracji, wbudowany serwer aplikacyjny Tomcat oraz wspomniane REST API.
+Wykorzystanie API pozwala ona na prostą komunikacje pomiędzy modułami obsługującymi interfejs graficzny użytkownika 
+oraz logikę biznesową z wykorzystaniem zapytań html. Z wykorzystaniem REST API dane w prosty sposób mogą być ekampsulowane oraz przesyłane do modułów obsługujących komunikacje z użytkownikiem.
+
+W ramach wykorzystanie frameworku Spring zostały wykorzystane  następujące moduły:
+\begin{center}
+    \begin{enumerate}
+        \item Spring-Boot-Web - obsługa REST API \\
+        \item Spring-Boot-Test - testowanie jednostkowe \\
+        \item Srping-Boot-Core - zarządzenie komponentami apliakcji \\
+    \end{enumerate}
+\end{center}
+
+Do testownia poszczególnych modułu warstwy serwera został wykorzystany silnik testowy JUnite 5. Wykorzystanie tego  środowisko testowego pozowliło na szerokie pokrycie kodu testami. W późniejszym
+etapie projektu zostały również napisane testy z wykorzsytaniem biblioteki fitnesse, pozwalających na przeprowadzenie testów akceptacyjnych.
+Wszystkie wykorzystane zewenętrzne zależności były konfigurowane z wykorzystaniem narzędzia Maven.
+
+\subsubsection{Model serwisu}
+
+Warstwa serwera została napisane w oparciu o architekture trój wartstwową, która składała się z wartstwy prezentacji, serwisu oraz repozytorium. Każda z warts miała określony zdefiniowany
+zakres działań. Każda z warst była implementwoana do interfejsu, który był udostępniony warstwie powyżej niej w celu łatwego kierowania przepływem danych w serwisie. Zastosowanie wymienionego
+sposobu pozwoliło na separacje zadań pomiędzy warstwami, luźne powiązania oraz brak odpowiednie kierowanie informacji w systemie.
+
+
+Kierunek przepływu danych w 3 wartstwej architektruze:
+\begin{center}
+
+    \includegraphics[width=\textwidth, height=10cm]{media/3_layer_architecture.png}
+
+\end{center}
+
+\subsubsection{Wrstaw prezentajcji}
+
+Najważniejszym punktem wartstwy prezentacji w ramach logiki biznesowej było dostarczenie metod pozwalających na komunikację pomiędzy modułem obsługującym interfejs graficzny. W ramach implementacj 
+programu zostały zaimplementowane cztery klasy obsługujące różnego rodzaju zapytania do serwera. Zostały one podzielone w ramach roli posiadanych przez użytkownika. Rola użtkownika w 
+systemie określała jego dostęp do serwisu. W ramach aplikacji powstały 3 role (rekrut, mosowicz oraz zarząd), którym odpowiadały również kontrolery punktów komunikacji. Dodatkowo w serwisie był
+kontroler obsługujący zarządnie logowania.
+
+Przykładowa list punktów końcowychi posiadanych przez serwis:  
+
+\begin{center}
+    \begin{enumerate}
+        \item localhost:8080/api/login?email=<address email zarejestorwanego użytkownika> - umożliwienie zalogowania do serwisu użytkownikowi \\
+        \item localhost:8080/api/recruit/make/reservation - rezerwacja przedmiotu przez rekruta \\
+        \item localhost:8080/api/recruit/equipment/list - lista dostępnych przedmiotów w kole naukowym \\
+        \item localhost:8080/api/recruit/locations - lista dosępnych  lokacji w których można wypożyczyć przedmiot \\
+        \item localhost:8080/api/mosowicz/make/rental - wypożyczenie przedmiotu przez członka koła \\
+        \item localhost:8080/api/mosowicz/make/return - zwrócenie wypożyczonego przedmiotu \\ 
+        \item localhost:8080/api/zarzad/add/item - dodanie nowego przedmiotu do wypozyczenia przez zarzad \\
+    \end{enumerate}
+\end{center}
+
+\subsubsection{Warstaw serwisu}
+
+Odpowiedzialnością warstwy serwisu jest walidacja danych otrzymanych od warstwy prezentacji oraz odpowiednie przetwarzanie oraz danych wysyłanych oraz odbieranych
+od instacji warst repozytorium. Proces walidacji opiera się w głównej mierze na sprawdzaniu czy w aktualnej sesji istnieje zalogowany użytkownik, czy dane 
+otrzymane w formie JSON są poprawne. Jako przykład może w tym przypadku posłużć data, która jest niezbędna do przeprowadzenia procesu rezerwacji oraz wypożyczenia.
+Musi ona spełniać pewne wymagania by została ona potraktowana jako data, która jest poprawna.
+
+Wymagania dotyczące daty początkowej oraz końcowej wypożyczenia oraz rezerwacji:
+\begin{center}
+    \begin{enumerate}
+        \item data początkowa nie może być datą przeszłą 
+        \item data końcowa nie może być datą przeszłą
+        \item data końcowa nie może być datą przeszła względem daty początkowej
+    \end{enumerate}
+\end{center}
+
+Warstwa serwisu została podzielona według innych kryteriów. W ramach tej warstwy został zaimplementowany serwis obsługujący logowanie, wypozyczenie, rezerwacje, 
+informacji (do przeglądania informacji  o przedmiotach).
+
+\subsubsection{Warstwa repoztyorium}
+
+Warstaw repozytorium obsługiwala wysyłanie zaptań do bazy dancyh w celu uzyskania odpowiednich zbiorów informacji do poprawnej odpowiedzi na uzyskane zapytanie przez REST API.
+W tej warstweie modelu trój-warstwowego istnieją klasy odpowiadające poszczególnym teabelom w bazie danych. Zastosowanie takiego mapowania "jeden do jeden"
+względem bazy pozwala w łatwy sposób działać w ramach poszczególnych serwisów należących do warstwy powyżej. W takim przypadku każdy serwis może wywoływać zapytania do poszczególnych 
+repozytoriów oraz agregować zebrane informacje w odpowiedź dla użytkownika. Natoamist instancje warstwy repozytorium mają jedną odpowiedzialność na którą składa się obsługa zapytań do
+przypisanej jej bazy danych. Takie podejście jest zgodne z zasadą pojedyńczej odpowiedzialności klasy. \\
+
+Warstawa repozytorium wykorzystuje Spring Data JPA, które ułątwia pisanie zapytań do bazy z wykorzystanie klasy EnitytManager. Pisanie zapytań z wykorzystaniem
+tego modułu Spring jest znacznie prostsze w prorównaniu z pisaniem pełnych zapytań SQL w postaci obiektów typu String. 
+
+Przykładowe zapytania napisane z wykorzystaniem Enitity Manger:
+\begin{lstlisting}[language=Java, breaklines=true, caption=Przykładowy zapytanie do bazy z warstwy repozytorium, label=lst:wr]
+public class EquipmentDAO {
+   // ...
+
+    @Override
+    public List<ReservationRegister> findReservationsBy(UUID userID) {
+        TypedQuery<ReservationRegister> query;
+        query = entityManager.createQuery("FROM ReservationRegister " +
+                                            "WHERE userReservation.id=:userID",
+                                            ReservationRegister.class);
+        query.setParameter("userID", userID);
+        return query.getResultList();
+    }
+
+   // ...
+}
+\end{lstlisting}
+
+Metoda findReservation wysyła zpaytanie do bazy danych w celu zwrócenia wszystkich rezerwacji dla określonego użytkownika serwisu.
+
+
+\subsubsection{Klasy pomocniczne, dla modelu trójwarstwowego}
+
+Do klas pomocnicznych dla działania serwisu trój warstwowego możemy uznać wszystkie klasy, których zadaniem było przekazywanie danych pomiędzy poszczególnymi
+warstwami (DTO class) oraz mapowania tabel baz danych (Entity class).
+
+Klasy typu DTO agregują dane wygnenerowane pomiędzy warstwami w celu przenoszenia ich. W ten sposób zostaje zachowana zasada luźnych powiązań pomiędzy klasamia.
+Klasy te mogą zostać przekształcone w rekordy ze względu na fakt, że służone one jedynie do przeniesienia danych oraz ich odczytania. Nie pozwalają one na ich modyfikacje.
+
+Klasy typu Entity są odzielnym rodzajem klas, których głównym zadaniem jest przedstawianie elementów modelu (domeny). Służą one do mapowania tabel w w ramach bazych danych.
+Ich wartości mogą być zmieniane, a następnie aktualizowane w bazie danych.
+
+\subsubsection{Testy strony serwera}
+
+Strona serwera w głównym stopniu zostałą przetestowana z wykorzysatniem testów jednostkowych. Testy jednostkowe pokryły prawie w 100\% calą wartstwę serwisu, która jest głównym celem takich testów.
+Tak wysokie pokrycie testów w przypadku warstwy serwisu wynika z faktu wykorzystania metodologi programowania Test Driven Development (TDD) stworzonej przez Robert C. Martin. Ta metodologia programowania
+opiera się na pisaniu funkcjonalności, która ma zostać wprowadzona do programu. Pozwala to jednocześnie łatwo ukierunkować pracę poprzez pisanie kolejnych linii kodu oraz zapewnienienia wysokiej poprawności
+napisanego kodu poprzez pokrycie go testami jednostkowymi.
+
+Dodatkowo została przeprowadzone testy akceptacyjne, które opierały się na przetestowniu poszczególnych odowłań do REST API oraz sprawdzenia czy zachowują się one
+poprawnie. Stwierdzenie czy zachowują się one poprawnie odnoście się do weryfikacji czy radzą one sobie odpowiednio zarówno z danymi poprawnymi jak i nie poprawnymi.
 
 \end{document}
