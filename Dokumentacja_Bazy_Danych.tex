@@ -917,7 +917,7 @@ Kierunek przepływu danych w 3 wartstwej architektruze:
 
 \end{center}
 
-\subsubsection{Wrstaw prezentajcji}
+\subsubsection{Warstwa prezentajcji}
 
 Najważniejszym punktem wartstwy prezentacji w ramach logiki biznesowej było dostarczenie metod pozwalających na komunikację pomiędzy modułem obsługującym interfejs graficzny. W ramach implementacj 
 programu zostały zaimplementowane cztery klasy obsługujące różnego rodzaju zapytania do serwera. Zostały one podzielone w ramach roli posiadanych przez użytkownika. Rola użtkownika w 
@@ -989,7 +989,6 @@ public class EquipmentDAO {
 
 Metoda findReservation wysyła zpaytanie do bazy danych w celu zwrócenia wszystkich rezerwacji dla określonego użytkownika serwisu.
 
-
 \subsubsection{Klasy pomocniczne, dla modelu trójwarstwowego}
 
 Do klas pomocnicznych dla działania serwisu trój warstwowego możemy uznać wszystkie klasy, których zadaniem było przekazywanie danych pomiędzy poszczególnymi
@@ -1010,5 +1009,102 @@ napisanego kodu poprzez pokrycie go testami jednostkowymi.
 
 Dodatkowo została przeprowadzone testy akceptacyjne, które opierały się na przetestowniu poszczególnych odowłań do REST API oraz sprawdzenia czy zachowują się one
 poprawnie. Stwierdzenie czy zachowują się one poprawnie odnoście się do weryfikacji czy radzą one sobie odpowiednio zarówno z danymi poprawnymi jak i nie poprawnymi.
+
+\section{Dokumentacja Strony Internetowej}
+
+\subsection{Wprowadzenie}
+
+System rezerwacji i wypożyczeń sprzętu stanowi kompleksowe rozwiązanie dla organizacji zarządzających zasobami sprzętowymi. Interfejs użytkownika został zaprojektowany w oparciu o React.js, zapewniając dynamiczne i interaktywne środowisko do przeglądania, rezerwowania, wypożyczania oraz zwracania sprzętu.
+
+Jak wcześniej opisano, backend systemu opiera się na Node.js z Express.js, z integracją z bazą danych MongoDB, co umożliwia efektywne przetwarzanie zapytań oraz zarządzanie danymi. W tej sekcji skupimy się na detalach implementacji front-endu oraz jego integracji z backendem.
+
+\subsection{Struktura Front-endu}
+
+Front-end projektu składa się z kilku kluczowych komponentów React, które są odpowiedzialne za różne aspekty interakcji użytkownika z systemem:
+
+\subsubsection{MakeReservation}
+
+Komponent ten jest centralnym punktem systemu, umożliwiając użytkownikom:
+
+\begin{itemize}
+    \item Przeglądanie bazy sprzętu w formie tabeli, która jest wyświetlana po pobraniu danych z API za pomocą żądania GET do \texttt{/api/mosowicz/equipment} lub \texttt{/api/rekrut/equipment}, zależnie od wybranego użytkownika. Tabela ta jest responsywna, dostosowując się do rozmiaru ekranu urządzenia użytkownika, co zapewnia doświadczenie użytkownika zgodne z zasadami UI/UX.
+    \item Wybór sprzętu do rezerwacji lub wypożyczenia za pomocą przycisków "Reserve" lub "Rent", które są dynamicznie wyłączane, gdy sprzęt nie jest dostępny. Każdy przycisk uruchamia procedurę wyboru sprzętu, przechowując jego ID w stanie aplikacji.
+    \item Określenie daty rozpoczęcia i zakończenia rezerwacji lub wypożyczenia za pomocą pól wejściowych typu "date". Ten formularz jest ukrywany, dopóki użytkownik nie wybierze sprzętu, co minimalizuje bałagan na ekranie i kieruje uwagę użytkownika na poszczególne kroki procesu.
+    \item Wysyłanie żądania POST do odpowiedniego endpointu (\texttt{/api/mosowicz/reservations} lub \texttt{/api/mosowicz/make/rental}) z danymi rezerwacji/wypożyczenia, co jest realizowane poprzez funkcję \texttt{handleSubmit}. Ta funkcja również zarządza błędami, logując je w konsoli i potencjalnie informując użytkownika o niepowodzeniu operacji.
+\end{itemize}
+
+\subsubsection{RentalEquipmentList}
+
+Ten komponent pozwala na:
+
+\begin{itemize}
+    \item Wyświetlenie listy aktualnie wypożyczonych przedmiotów, które są pobierane z \texttt{/api/mosowicz/current/rentals}. Każdy wpis na liście zawiera szczegółowe informacje o sprzęcie, jego statusie, datach rezerwacji oraz lokalizacji.
+    \item Możliwość zwrotu sprzętu poprzez wysłanie żądania DELETE do \texttt{/api/mosowicz/make/return} z identyfikatorem wypożyczenia (\texttt{rentalUUID}). Po pomyślnym zwrocie, komponent odświeża listę, aby odzwierciedlić zmiany w statusie sprzętu.
+\end{itemize}
+
+\subsubsection{Locations}
+
+Komponent \texttt{Locations} jest odpowiedzialny za:
+
+\begin{itemize}
+    \item Pokazywanie listy lokalizacji wraz z rolami użytkowników, co jest osiągane po pobraniu danych z \texttt{/api/mosowicz/status}.
+    \item Oferowanie opcji filtrowania lokalizacji według roli, jeśli takowa funkcja jest dostępna na backendzie, dzięki czemu użytkownicy mogą szybko znajdować potrzebne informacje.
+\end{itemize}
+
+\subsection{Zarządzanie Stanem i Efektami Ubocznymi}
+
+Każdy komponent używa hooków \texttt{useState} do zarządzania lokalnym stanem, na przykład do przechowywania wybranych dat rezerwacji, listy sprzętu, czy wybranego sprzętu do rezerwacji. \texttt{useEffect} jest wykorzystywany do obsługi efektów ubocznych, głównie do fetchowania danych po zamontowaniu komponentu lub po zmianie pewnych stanów, co zapewnia synchronizację stanu aplikacji z backendem.
+
+\subsection{Stylowanie i Responsywność}
+
+Projekt korzysta z CSS modules dla izolacji styli, co zapobiega kolizjom nazw klas CSS między komponentami. Styl aplikacji jest inspirowany nowoczesnymi interfejsami, takimi jak te znane z mediów społecznościowych, zapewniając intuicyjność i estetykę. Responsywność jest kluczowym elementem projektu, zapewniając, że aplikacja jest użyteczna zarówno na komputerach stacjonarnych, jak i na urządzeniach mobilnych.
+
+\subsection{Bezpieczeństwo i Uwierzytelnianie}
+
+Front-end jest zaprojektowany z myślą o bezpieczeństwie użytkowników:
+
+\begin{itemize}
+    \item Komunikacja z serwerem odbywa się za pomocą Axios, gdzie \texttt{withCredentials: true} zapewnia, że żądania są wysyłane z uwierzytelnionymi ciasteczkami sesji, co jest kluczowe dla bezpieczeństwa operacji, takich jak rezerwacje czy zwroty.
+    \item Front-end nie przechowuje ani nie wyświetla wrażliwych danych użytkowników, jak identyfikatory osobiste czy hasła. Wszelkie wrażliwe operacje, takie jak logowanie, są przekierowywane bezpośrednio do backendu, który zarządza uwierzytelnianiem.
+\end{itemize}
+
+\subsection{Przyszłe Rozszerzenia}
+
+Rozważane są następujące rozszerzenia, które mogą dodać wartość do systemu:
+
+\begin{itemize}
+    \item Dodanie funkcji zarządzania uprawnieniami użytkowników, co pozwoli na bardziej zaawansowane kontrolowanie dostępu do funkcji systemu.
+    \item Implementacja systemu powiadomień, informującego użytkowników o statusie rezerwacji lub zbliżających się terminach zwrotu.
+    \item Wprowadzenie raportów i analiz, które mogą pomóc w zarządzaniu zasobami sprzętowymi na poziomie organiz...
+          \item Komponenty nie przechowują ani nie wyświetlają wrażliwych danych użytkowników, jak numery identyfikacyjne czy hasła. Wszelkie operacje wymagające uwierzytelnienia są przekierowywane do backendu, gdzie odbywa się właściwa walidacja i autoryzacja.
+    \item W przypadku błędów w komunikacji z backendem, system jest zaprojektowany tak, aby użytkownik otrzymał jasne i pomocne komunikaty, co pomaga w szybszym rozwiązywaniu problemów.
+\end{itemize}
+
+\subsection{Integracja z Backendem}
+
+Integracja front-endu z backendem jest kluczowym aspektem działania systemu:
+
+\begin{itemize}
+    \item Każda interakcja użytkownika, jak wybór sprzętu do rezerwacji, wysyłanie formularza rezerwacji lub zwrot sprzętu, przekłada się na odpowiednie żądanie HTTP wysyłane do backendu. Komponenty React wykorzystują Axios do asynchronicznych komunikacji, co zapewnia płynność operacji.
+    \item Endpointy API są precyzyjnie zdefiniowane, aby każdy komponent mógł efektywnie komunikować się z serwerem. Na przykład, \texttt{MakeReservation} wysyła żądania POST do \texttt{/api/mosowicz/make/rental} lub \texttt{/api/mosowicz/reservations} w zależności od typu operacji.
+    \item Komponenty front-endowe zarządzają stanem danych, które są aktualizowane po każdej interakcji z backendem, co zapewnia, że użytkownik zawsze widzi najnowsze dane.
+\end{itemize}
+
+\subsection{Przyszłe Rozszerzenia}
+
+System został zaprojektowany z myślą o przyszłej rozbudowie. Oto kilka możliwych kierunków rozwoju:
+
+\begin{itemize}
+    \item \textbf{Zarządzanie Uprawnieniami}: Dodanie systemu ról i uprawnień, który ograniczy dostęp do niektórych funkcji tylko dla uprawnionych użytkowników.
+    \item \textbf{Powiadomienia}: Implementacja systemu powiadomień, który informuje użytkowników o statusie ich rezerwacji, zbliżających się terminach zwrotu lub innych kluczowych wydarzeniach.
+    \item \textbf{Raporty i Analizy}: Dodanie funkcji generowania raportów, które mogą pomóc w analizie wykorzystania sprzętu, popularności poszczególnych przedmiotów, czy planowaniu zakupów nowego sprzętu.
+    \item \textbf{Integracja z Kalendarzem}: Możliwość integracji z popularnymi kalendarzami (np. Google Calendar), aby użytkownicy mogli automatycznie dodawać swoje rezerwacje i terminy zwrotów.
+    \item \textbf{Multi-language Support}: Wsparcie dla wielu języków, co zwiększy dostępność systemu dla użytkowników z różnych regionów.
+    \item \textbf{Optymalizacja dla Urządzeń Mobilnych}: Dalsze udoskonalenie responsywności aplikacji z myślą o użytkownikach mobilnych, którzy mogą potrzebować szybkiego dostępu do systemu z telefonów czy tabletów.
+\end{itemize}
+
+\subsection{Podsumowanie}
+
+System rezerwacji i wypożyczeń sprzętu zaprojektowany w oparciu o React.js i Node.js jest narzędziem, które oferuje intuicyjny interfejs użytkownika z możliwością łatwej rozbudowy i integracji z backendem. Dzięki użyciu nowoczesnych technologii oraz przemyślanej architekturze, system ten jest przygotowany do skutecznego zarządzania zasobami sprzętowymi w każdej organizacji, zapewniając jednocześnie możliwość dostosowania do specyficznych potrzeb użytkowników.
 
 \end{document}
