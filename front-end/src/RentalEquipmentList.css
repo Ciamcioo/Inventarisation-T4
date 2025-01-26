@@ -1,53 +1,67 @@
-/* RentalEquipmentList.css */
-
-.rental-equipment-list {
-  font-family: Arial, sans-serif;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+.rental-list-container {
+  max-width: 800px; /* Increased max-width for more content */
+  margin: 20px auto;
+  background-color: #ffffff;
+  border: 1px solid #dddfe2;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.rental-equipment-list h2 {
-  color: #333;
-  border-bottom: 2px solid #007BFF;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-
-.rental-equipment-list ul {
-  list-style-type: none;
+h2 {
+  color: #1c1e21;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 16px 16px 0;
   padding: 0;
 }
 
-.rental-equipment-list li {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  margin-bottom: 10px;
+.rental-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rental-item {
+  border-bottom: 1px solid #dddfe2;
   padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.rental-equipment-list li:hover {
-  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+.rental-details {
+  flex: 1;
 }
 
-.rental-equipment-list li strong {
-  color: #007BFF;
+.rental-details h3 {
+  margin: 0 0 10px;
+  color: #1c1e21;
+  font-size: 16px;
 }
 
-.loading, .error {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 18px;
-  font-weight: bold;
+.rental-details p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #606770;
 }
 
-.error {
-  color: #dc3545;
+.rental-actions {
+  margin-left: 20px;
 }
 
-.loading {
-  color: #28a745;
+.return-button {
+  background-color: #4267b2;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.return-button:hover {
+  background-color: #365899;
 }

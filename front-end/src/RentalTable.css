@@ -1,0 +1,31 @@
+.rental-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  background-color: #ffffff;
+  border: 1px solid #dddfe2;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.rental-table th,
+.rental-table td {
+  border: 1px solid #dddfe2;
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.rental-table th {
+  background-color: #f5f6f7;
+  font-weight: bold;
+  color: #1c1e21;
+}
+
+.rental-table tr:nth-child(even) {
+  background-color: #f5f6f7;
+}
+
+.rental-table tr:hover {
+  background-color: #e9ebee;
+}

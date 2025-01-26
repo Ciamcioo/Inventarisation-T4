@@ -1,4 +1,82 @@
-/* src/App.css */
-.App {
-  text-align: center;
+.app-container {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
+
+.app-header {
+  background-color: #4267b2;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px 8px 0 0;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.logout-button {
+  background-color: #f5f6f7;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #4267b2;
+}
+
+.logout-button:hover {
+  background-color: #e9ebee;
+}
+
+.main-content {
+  display: flex;
+  background-color: #ffffff;
+  border: 1px solid #dddfe2;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar {
+  width: 200px;
+  background-color: #f5f6f7;
+  border-right: 1px solid #dddfe2;
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  padding: 10px 15px;
+  border-bottom: 1px solid #dddfe2;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #1c1e21;
+  font-size: 14px;
+  display: block;
+}
+
+.sidebar a:hover {
+  background-color: #e9ebee;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}
+
+.content div {
+  margin-bottom: 40px;
+}
+
+/* Add more specific styles for your components here if needed */

@@ -1,0 +1,93 @@
+.make-reservation {
+  margin: 20px;
+  overflow-x: auto; /* Allows horizontal scrolling if the table is too wide */
+}
+
+.equipment-table {
+  width: 100%; /* Ensures table fits within its container */
+  border-collapse: collapse;
+  font-size: 16px;
+  border: 1px solid #dddfe2;
+}
+
+.equipment-table th, .equipment-table td {
+  border: 1px solid #dddfe2;
+  padding: 15px;
+  word-wrap: break-word; /* Ensures text wraps within cells */
+}
+
+.equipment-table th {
+  background-color: #4267b2;
+  color: white;
+  font-weight: bold;
+  text-align: left;
+}
+
+.equipment-table tr:nth-child(even) {
+  background-color: #f5f6f7;
+}
+
+.equipment-table tr:hover {
+  background-color: #e9ebee;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.action-buttons button {
+  background-color: #4267b2;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.action-buttons button:hover {
+  background-color: #365899;
+}
+
+.action-buttons button:disabled {
+  background-color: #a4a4a4;
+  cursor: not-allowed;
+}
+
+.reservation-form {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f5f6f7;
+  border: 1px solid #dddfe2;
+  border-radius: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reservation-form input,
+.reservation-form button {
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #dddfe2;
+  border-radius: 4px;
+}
+
+.reservation-form input[type="text"],
+.reservation-form input[type="date"] {
+  flex: 1;
+  min-width: 150px;
+}
+
+.reservation-form button {
+  background-color: #4267b2;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.reservation-form button:hover {
+  background-color: #365899;
+}

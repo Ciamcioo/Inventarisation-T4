@@ -1,0 +1,33 @@
+.locations-container {
+  max-width: 600px;
+  margin: 20px auto;
+  background-color: #ffffff;
+  border: 1px solid #dddfe2;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+h2 {
+  color: #1c1e21;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 16px 16px 0;
+  padding: 0;
+}
+
+.locations-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.location-item {
+  border-bottom: 1px solid #dddfe2;
+  padding: 12px 16px;
+}
+
+.location-item strong {
+  color: #1c1e21;
+  margin-right: 8px;
+}
