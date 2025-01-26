@@ -39,30 +39,3 @@ INSERT INTO equipment (id, name, quantity, description, technical_status_id, sta
 (UUID(), 'Raspberry', 5, 'Pico W', 3, 3, 1, 3),
 (UUID(), 'Drill', 5, 'Power drills', 2, 2, 2, 2);
 
-INSERT INTO rental_register (id, user_id, equipment_id, start_date, end_date) VALUES 
-(UUID(), (SELECT id FROM user WHERE first_name = 'Alice'), 
- (SELECT id FROM equipment WHERE name = 'Laptop'), '2023-01-01', '2023-01-10'),
-(UUID(), (SELECT id FROM user WHERE first_name = 'Bob'), 
- (SELECT id FROM equipment WHERE name = 'Drill'), '2023-02-01', '2023-02-05');
-
-INSERT INTO reservation_register (reservation_id, user_id, timeout, start_date, end_date, equipment_id) VALUES 
-(UUID(), (SELECT id FROM user WHERE first_name = 'Charlie'), '2023-03-01', '2023-03-01', '2023-03-07', 
- (SELECT id FROM equipment WHERE name = 'Raspberry'));
-
-INSERT INTO reservation_equipment (reservation_id, equipment_id, identifier, quantity) VALUES 
-((SELECT reservation_id FROM reservation_register WHERE user_id = (SELECT id FROM user WHERE first_name = 'Charlie')), 
- (SELECT id FROM equipment WHERE name = 'Raspberry'), UUID(), 3);
-
-INSERT INTO rental_equipment (rental_id, equipment_id, technical_status, identifier, quantity)
-VALUES
-(
-   (SELECT id FROM rental_register WHERE user_id = (SELECT id FROM user WHERE first_name = 'Alice') AND equipment_id = (SELECT id FROM equipment WHERE name = 'Laptop') LIMIT 1),
-   (SELECT id FROM equipment WHERE name = 'Laptop'),
-   1, UUID(), 2
-),
-(
-   (SELECT id FROM rental_register WHERE user_id = (SELECT id FROM user WHERE first_name = 'Bob') AND equipment_id = (SELECT id FROM equipment WHERE name = 'Drill') LIMIT 1),
-   (SELECT id FROM equipment WHERE name = 'Drill'),
-   2, UUID(), 1 
-);
-

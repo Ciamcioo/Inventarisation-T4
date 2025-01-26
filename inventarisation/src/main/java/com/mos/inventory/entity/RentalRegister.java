@@ -19,7 +19,7 @@ public class RentalRegister {
     @JoinColumn(name = "user_id")
     private User userRental;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable(
             name = "rental_equipment",
             joinColumns = {@JoinColumn(name = "rental_id")},
