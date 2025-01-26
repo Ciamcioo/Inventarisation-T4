@@ -11,7 +11,7 @@ function App() {
   const [error, setError] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeComponent, setActiveComponent] = useState(null);
-  const [isRecruit, isRecruitSet] = useState(false);
+  const [isRecruit, setIsRecruit] = useState(false);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -26,6 +26,7 @@ function App() {
     e.preventDefault();
 
     try {
+      console.log(email);
       const response = await axios.get(`http://localhost:8080/api/login`, {
         params: {
           email: email
@@ -33,9 +34,10 @@ function App() {
         withCredentials: true
       });
 
-      if (response.data.message = "SUCCESFULL") {
-        if (response.data.userRoleName == "Rekrut") {
-          isRecruit = true;
+      console.log(response);
+      if (response.data.message === "SUCCESSFUL") {
+        if (response.data.userRoleName === "Rekrut") {
+          setIsRecruit(true);
         }
         handleLogin();
       } else {
@@ -50,7 +52,6 @@ function App() {
       console.error('Login error:', error);
     }
   };
-
 
   const handleMenuClick = (componentName) => {
     setActiveComponent(componentName);
@@ -75,37 +76,6 @@ function App() {
     );
   }
 
-  if (!isRecruit) {
-    return (
-      <div className="app-container">
-        <header className="app-header">
-          <h1>Rental Management System</h1>
-          <button className="logout-button" onClick={handleLogout}>Logout</button>
-        </header>
-        <div className="main-content">
-          <nav className="sidebar">
-            <ul>
-              <li><a href="#current-rentals" onClick={() => handleMenuClick('RentalEquipmentList')}>Current Rentals</a></li>
-              <li><a href="#make-reservation" onClick={() => handleMenuClick('MakeReservation')}>Make Reservation</a></li>
-              <li><a href="#locations" onClick={() => handleMenuClick('Locations')}>Locations</a></li>
-            </ul>
-          </nav>
-          <section className="content">
-            <div id="current-rentals" style={{display: activeComponent === 'RentalEquipmentList' ? 'block' : 'none'}}>
-              <RentalEquipmentList />
-            </div>
-            <div id="make-reservation" style={{display: activeComponent === 'MakeReservation' ? 'block' : 'none'}}>
-              <MakeReservation user={'mosowicz'}/>
-            </div>
-            <div id="locations" style={{display: activeComponent === 'Locations' ? 'block' : 'none'}}>
-              <Locations user={'mosowicz'} />
-            </div>
-          </section>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="app-container">
       <header className="app-header">
@@ -115,17 +85,29 @@ function App() {
       <div className="main-content">
         <nav className="sidebar">
           <ul>
-            <li><a href="#current-rentals" onClick={() => handleMenuClick('RentalEquipmentList')}>Current Rentals</a></li>
-            <li><a href="#make-reservation" onClick={() => handleMenuClick('MakeReservation')}>Make Reservation</a></li>
+            <li>
+              <a href="#current-rentals" onClick={() => handleMenuClick('RentalEquipmentList')}>
+                Current Rentals
+              </a>
+            </li>
+            <li>
+              <a href="#make-reservation" onClick={() => handleMenuClick('MakeReservation')}>
+                Make Reservation
+              </a>
+            </li>
+            {!isRecruit && (
+              <li>
+                <a href="#locations" onClick={() => handleMenuClick('Locations')}>
+                  Locations
+                </a>
+              </li>
+            )}
           </ul>
         </nav>
         <section className="content">
-          <div id="current-rentals" style={{display: activeComponent === 'RentalEquipmentList' ? 'block' : 'none'}}>
-            <RentalEquipmentList />
-          </div>
-          <div id="make-reservation" style={{display: activeComponent === 'MakeReservation' ? 'block' : 'none'}}>
-            <MakeReservation />
-          </div>
+          {activeComponent === 'RentalEquipmentList' && <RentalEquipmentList />}
+          {activeComponent === 'MakeReservation' && <MakeReservation user="mosowicz" />}
+          {activeComponent === 'Locations' && !isRecruit && <Locations user="mosowicz" />}
         </section>
       </div>
     </div>
@@ -133,3 +115,4 @@ function App() {
 }
 
 export default App;
+

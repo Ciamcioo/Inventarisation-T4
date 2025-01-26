@@ -18,6 +18,7 @@ const RentalEquipmentList = () => {
         withCredentials: true
       });
       // Assuming the API now returns more detailed information about each rental
+      console.log(response.data);
       setRentals(response.data);
       setError(null);
     } catch (err) {
