@@ -30,7 +30,7 @@
 ├── inventarisation/     # Application logic and inventory functionalities
 ├── media/               # Multimedia resources used in the application
 ├── sql/                 # SQL scripts for database management
-└── Dokumentacja_Bazy_Danych.tex  # Project documentation
+└── Documentation.pdf    # Project documentation
 ```
 
 ## Installation and Setup
