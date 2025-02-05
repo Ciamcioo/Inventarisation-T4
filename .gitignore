@@ -3,6 +3,9 @@
 *.log
 *.fdb_latexmk
 *.fls
+*.tex
+Prezentacja.pdf
+Makefile
 .idea/
 target/
 inventarisation/FitNesseRoot/

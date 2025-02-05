@@ -87,6 +87,7 @@ public class EquipTxnService implements ReservationService, RentalService{
     @Override
     public EquipTransactionResult returnRental(UUID rentalID) {
         Optional<EquipTransactionResult> validationResult = validator.checkIfUserContextIsPresent();
+
         if (validationResult.isPresent()) {
             return validationResult.get();
         }
